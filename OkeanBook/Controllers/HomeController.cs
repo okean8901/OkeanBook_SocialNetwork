@@ -15,15 +15,18 @@ namespace OkeanBook.Controllers
         private readonly IPostService _postService;
         private readonly IUserService _userService;
         private readonly INotificationService _notificationService;
+        private readonly IGroupService _groupService;
 
         public HomeController(
             IPostService postService,
             IUserService userService,
-            INotificationService notificationService)
+            INotificationService notificationService,
+            IGroupService groupService)
         {
             _postService = postService;
             _userService = userService;
             _notificationService = notificationService;
+            _groupService = groupService;
         }
 
         /// <summary>
@@ -40,10 +43,46 @@ namespace OkeanBook.Controllers
             var posts = await _postService.GetNewsFeedAsync(userId, page, 10);
             var unreadNotificationCount = await _notificationService.GetUnreadNotificationCountAsync(userId);
 
+            // Load notifications
+            var notifications = await _notificationService.GetUserNotificationsAsync(userId, 1, 5);
+
+            // Friend suggestions and recent friends
+            var suggestions = await _userService.GetOnlineFriendsAsync(userId);
+            var recentFriends = await _userService.GetFriendsAsync(userId);
+
+            // Trending topics: placeholder from recent posts (simple extraction)
+            var trending = posts
+                .Where(p => !string.IsNullOrWhiteSpace(p.Content) && p.Content.Contains('#'))
+                .SelectMany(p => p.Content.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                    .Where(w => w.StartsWith('#')))
+                .GroupBy(h => h)
+                .Select(g => new TrendingTopicViewModel { Hashtag = g.Key, PostCount = g.Count() })
+                .OrderByDescending(t => t.PostCount)
+                .Take(5)
+                .ToList();
+
+            var vm = new HomeViewModel
+            {
+                Posts = posts,
+                Notifications = notifications.Select(n => new NotificationItemViewModel
+                {
+                    Title = n.Type.ToString(),
+                    Message = n.Message ?? string.Empty,
+                    CreatedAgo = n.CreatedAt.ToLocalTime().ToString("HH:mm dd/MM"),
+                    Type = n.Type.ToString()
+                }),
+                FriendSuggestions = suggestions,
+                RecentFriends = recentFriends.Take(5),
+                TrendingTopics = trending,
+                UserGroups = (await _groupService.GetUserGroupsAsync(userId)).Take(5),
+                CurrentPage = page,
+                UnreadNotificationCount = unreadNotificationCount
+            };
+
             ViewBag.UnreadNotificationCount = unreadNotificationCount;
             ViewBag.CurrentPage = page;
 
-            return View(posts);
+            return View(vm);
         }
 
         /// <summary>
@@ -165,11 +204,31 @@ namespace OkeanBook.Controllers
                 return RedirectToAction("Index");
             }
 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? string.Empty;
             var posts = await _postService.SearchPostsAsync(query, page, 10);
+            var unreadNotificationCount = string.IsNullOrEmpty(userId) ? 0 : await _notificationService.GetUnreadNotificationCountAsync(userId);
+
+            var vm = new HomeViewModel
+            {
+                Posts = posts,
+                Notifications = Enumerable.Empty<NotificationItemViewModel>(),
+                FriendSuggestions = Enumerable.Empty<UserViewModel>(),
+                TrendingTopics = posts
+                    .Where(p => !string.IsNullOrWhiteSpace(p.Content) && p.Content.Contains('#'))
+                    .SelectMany(p => p.Content.Split(' ', StringSplitOptions.RemoveEmptyEntries).Where(w => w.StartsWith('#')))
+                    .GroupBy(h => h)
+                    .Select(g => new TrendingTopicViewModel { Hashtag = g.Key, PostCount = g.Count() })
+                    .OrderByDescending(t => t.PostCount)
+                    .Take(5)
+                    .ToList(),
+                CurrentPage = page,
+                UnreadNotificationCount = unreadNotificationCount
+            };
+
             ViewBag.Query = query;
             ViewBag.CurrentPage = page;
 
-            return View("Index", posts);
+            return View("Index", vm);
         }
 
         /// <summary>

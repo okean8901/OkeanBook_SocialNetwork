@@ -2,94 +2,99 @@
     ViewData["Title"] = "Bạn bè";
 }
 
-<div class="row">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Quản lý bạn bè</h5>
-                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#searchModal">
-                    <i class="fas fa-search me-1"></i>Tìm kiếm
-                </button>
-            </div>
-            <div class="card-body">
-                <!-- Tabs -->
-                <ul class="nav nav-tabs" id="friendTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="friends-tab" data-bs-toggle="tab" data-bs-target="#friends" type="button">
-                            Bạn bè <span class="badge bg-primary ms-1" id="friendsCount">0</span>
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests" type="button">
-                            Lời mời <span class="badge bg-warning ms-1" id="requestsCount">0</span>
-                        </button>
-                    </li>
-                </ul>
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Main Card -->
+            <div class="lg:col-span-2">
+                <div class="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+                    <!-- Header -->
+                    <div class="flex items-center justify-between p-6 border-b border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+                        <div class="flex items-center space-x-3">
+                            <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center">
+                                <i class="fas fa-user-friends text-white"></i>
+                            </div>
+                            <h2 class="text-white font-bold text-xl">Quản lý bạn bè</h2>
+                        </div>
+                        <!-- Search bar trigger (desktop inline search below) -->
+                    </div>
 
-                <div class="tab-content mt-3" id="friendTabsContent">
-                    <!-- Danh sách bạn bè -->
-                    <div class="tab-pane fade show active" id="friends" role="tabpanel">
-                        <div id="friendsList">
-                            <div class="text-center py-4">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Đang tải...</span>
+                    <!-- Search -->
+                    <div class="p-6 border-b border-white/20">
+                        <div class="flex flex-col sm:flex-row gap-3">
+                            <div class="relative flex-1">
+                                <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                    <i class="fas fa-search text-white/60"></i>
+                                </div>
+                                <input id="searchInput" type="text" class="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl pl-12 pr-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400/50 transition-all" placeholder="Nhập tên hoặc email...">
+                            </div>
+                            <button id="searchBtn" class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 transform shadow-lg">
+                                <i class="fas fa-search mr-2"></i>Tìm kiếm
+                            </button>
+                        </div>
+                        <div id="searchResults" class="mt-4 space-y-3"></div>
+                    </div>
+
+                    <!-- Tabs -->
+                    <div class="px-6 pt-4">
+                        <div class="flex space-x-2">
+                            <button id="tabFriends" class="tab-btn active px-4 py-2 rounded-2xl text-white bg-gradient-to-r from-purple-600 to-blue-600">
+                                Bạn bè <span class="ml-2 bg-white/20 px-2 py-0.5 rounded-full text-xs" id="friendsCount">0</span>
+                            </button>
+                            <button id="tabRequests" class="tab-btn px-4 py-2 rounded-2xl text-white/80 hover:text-white hover:bg-white/10 border border-white/10">
+                                Lời mời <span class="ml-2 bg-white/10 px-2 py-0.5 rounded-full text-xs" id="requestsCount">0</span>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Content -->
+                    <div class="p-6">
+                        <!-- Friends list -->
+                        <div id="friends" class="tab-panel">
+                            <div id="friendsList" class="space-y-3">
+                                <div class="text-center py-10">
+                                    <div class="inline-flex items-center px-4 py-2 rounded-2xl bg-white/10 border border-white/20 text-white/70">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i> Đang tải...
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <!-- Requests list -->
+                        <div id="requests" class="tab-panel hidden">
+                            <div id="requestsList" class="space-y-3">
+                                <div class="text-center py-10">
+                                    <div class="inline-flex items-center px-4 py-2 rounded-2xl bg-white/10 border border-white/20 text-white/70">
+                                        <i class="fas fa-spinner fa-spin mr-2"></i> Đang tải...
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
+                </div>
+            </div>
 
-                    <!-- Lời mời kết bạn -->
-                    <div class="tab-pane fade" id="requests" role="tabpanel">
-                        <div id="requestsList">
-                            <div class="text-center py-4">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Đang tải...</span>
-                                </div>
+            <!-- Stats Card -->
+            <div class="lg:col-span-1">
+                <div class="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+                    <div class="p-6 border-b border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+                        <h3 class="text-white font-bold">Thống kê</h3>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 gap-4 text-center">
+                            <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <h4 class="text-2xl font-bold text-purple-300" id="totalFriends">0</h4>
+                                <p class="text-white/60 text-sm">Bạn bè</p>
                             </div>
+                            <div class="p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <h4 class="text-2xl font-bold text-yellow-300" id="pendingRequests">0</h4>
+                                <p class="text-white/60 text-sm">Lời mời</p>
+                            </div>
+                        </div>
+                        <div class="mt-6">
+                            <button id="refreshBtn" class="w-full bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-2xl font-semibold transition-all border border-white/20">Làm mới</button>
                         </div>
                     </div>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">Thống kê</h6>
-            </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-6">
-                        <h4 class="text-primary" id="totalFriends">0</h4>
-                        <small class="text-muted">Bạn bè</small>
-                    </div>
-                    <div class="col-6">
-                        <h4 class="text-warning" id="pendingRequests">0</h4>
-                        <small class="text-muted">Lời mời</small>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- Modal tìm kiếm -->
-<div class="modal fade" id="searchModal" tabindex="-1">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Tìm kiếm người dùng</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="input-group mb-3">
-                    <input type="text" id="searchInput" class="form-control" placeholder="Nhập tên hoặc email...">
-                    <button class="btn btn-primary" type="button" onclick="searchUsers()">
-                        <i class="fas fa-search"></i>
-                    </button>
-                </div>
-                <div id="searchResults"></div>
             </div>
         </div>
     </div>
@@ -97,83 +102,107 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            loadFriends();
-            loadFriendRequests();
-        });
+        // Tab switching
+        const tabFriendsBtn = document.getElementById('tabFriends');
+        const tabRequestsBtn = document.getElementById('tabRequests');
+        const panelFriends = document.getElementById('friends');
+        const panelRequests = document.getElementById('requests');
 
-        function loadFriends() {
-            $.get('@Url.Action("Index", "Friend")')
-                .done(function(data) {
-                    // Parse HTML response and extract friends
-                    var friendsHtml = $(data).find('#friendsList').html();
-                    $('#friendsList').html(friendsHtml);
-                    updateFriendsCount();
-                });
+        function setActiveTab(tab) {
+            if (tab === 'friends') {
+                tabFriendsBtn.classList.add('bg-gradient-to-r','from-purple-600','to-blue-600','text-white');
+                tabFriendsBtn.classList.remove('text-white/80','hover:text-white','hover:bg-white/10','border','border-white/10');
+                tabRequestsBtn.classList.remove('bg-gradient-to-r','from-purple-600','to-blue-600','text-white');
+                tabRequestsBtn.classList.add('text-white/80','hover:text-white','hover:bg-white/10','border','border-white/10');
+                panelFriends.classList.remove('hidden');
+                panelRequests.classList.add('hidden');
+            } else {
+                tabRequestsBtn.classList.add('bg-gradient-to-r','from-purple-600','to-blue-600','text-white');
+                tabRequestsBtn.classList.remove('text-white/80','hover:text-white','hover:bg-white/10','border','border-white/10');
+                tabFriendsBtn.classList.remove('bg-gradient-to-r','from-purple-600','to-blue-600','text-white');
+                tabFriendsBtn.classList.add('text-white/80','hover:text-white','hover:bg-white/10','border','border-white/10');
+                panelFriends.classList.add('hidden');
+                panelRequests.classList.remove('hidden');
+            }
         }
 
-        function loadFriendRequests() {
-            $.get('@Url.Action("Index", "Friend")')
-                .done(function(data) {
-                    // Parse HTML response and extract requests
-                    var requestsHtml = $(data).find('#requestsList').html();
-                    $('#requestsList').html(requestsHtml);
-                    updateRequestsCount();
-                });
+        tabFriendsBtn.addEventListener('click', () => setActiveTab('friends'));
+        tabRequestsBtn.addEventListener('click', () => setActiveTab('requests'));
+
+        // Data loading helpers (reusing server HTML like previous jQuery version)
+        async function fetchHtml(url) {
+            const res = await fetch(url, { headers: { 'X-Requested-With': 'XMLHttpRequest' } });
+            const text = await res.text();
+            return new DOMParser().parseFromString(text, 'text/html');
         }
 
-        function searchUsers() {
-            var query = $('#searchInput').val().trim();
+        async function loadFriends() {
+            try {
+                const doc = await fetchHtml('@Url.Action("Index", "Friend")');
+                const html = doc.querySelector('#friendsList')?.innerHTML ?? '';
+                document.getElementById('friendsList').innerHTML = html;
+                updateFriendsCount();
+            } catch (e) { console.error(e); }
+        }
+
+        async function loadFriendRequests() {
+            try {
+                const doc = await fetchHtml('@Url.Action("Index", "Friend")');
+                const html = doc.querySelector('#requestsList')?.innerHTML ?? '';
+                document.getElementById('requestsList').innerHTML = html;
+                updateRequestsCount();
+            } catch (e) { console.error(e); }
+        }
+
+        // Search
+        async function searchUsers() {
+            const query = document.getElementById('searchInput').value.trim();
+            const results = document.getElementById('searchResults');
             if (!query) {
-                $('#searchResults').html('<p class="text-muted">Vui lòng nhập từ khóa tìm kiếm</p>');
+                results.innerHTML = '<p class="text-white/60">Vui lòng nhập từ khóa tìm kiếm</p>';
                 return;
             }
-
-            $.get('@Url.Action("Search", "Friend")', { query: query })
-                .done(function(response) {
-                    if (response.success) {
-                        displaySearchResults(response.users);
-                    } else {
-                        $('#searchResults').html('<p class="text-danger">' + response.message + '</p>');
-                    }
-                });
+            results.innerHTML = '<div class="text-white/70"><i class="fas fa-spinner fa-spin mr-2"></i>Đang tìm...</div>';
+            try {
+                const res = await fetch('@Url.Action("Search", "Friend")' + `?query=${encodeURIComponent(query)}`);
+                const data = await res.json();
+                if (data.success) {
+                    displaySearchResults(data.users || []);
+                } else {
+                    results.innerHTML = `<p class="text-red-400">${data.message || 'Có lỗi xảy ra'}</p>`;
+                }
+            } catch (e) {
+                results.innerHTML = '<p class="text-red-400">Không thể tìm kiếm lúc này</p>';
+            }
         }
 
         function displaySearchResults(users) {
-            if (users.length === 0) {
-                $('#searchResults').html('<p class="text-muted">Không tìm thấy người dùng nào</p>');
+            const results = document.getElementById('searchResults');
+            if (!users || users.length === 0) {
+                results.innerHTML = '<p class="text-white/60">Không tìm thấy người dùng nào</p>';
                 return;
             }
-
-            var html = '';
-            users.forEach(function(user) {
-                var statusText = getStatusText(user.status);
-                var statusClass = getStatusClass(user.status);
-                var actionButton = getActionButton(user.friendStatus, user.id);
-
-                html += `
-                    <div class="d-flex align-items-center mb-3 p-2 border rounded">
-                        <img src="${user.avatar || '/img/default-avatar.png'}" 
-                             class="rounded-circle me-3" width="40" height="40" alt="Avatar">
-                        <div class="flex-grow-1">
-                            <h6 class="mb-1">${user.username}</h6>
-                            <small class="text-muted">${user.email}</small>
-                            <br>
-                            <small class="${statusClass}">${statusText}</small>
+            const items = users.map(user => {
+                const statusText = getStatusText(user.status);
+                const statusClass = getStatusClass(user.status);
+                const actionButton = getActionButton(user.friendStatus, user.id);
+                const avatar = user.avatar || '~/img/default-avatar.png';
+                return `
+                    <div class="flex items-center p-3 rounded-2xl bg-white/5 border border-white/10">
+                        <img src="${avatar}" class="w-12 h-12 rounded-xl ring-2 ring-white/20 mr-3" alt="Avatar">
+                        <div class="flex-1 min-w-0">
+                            <p class="text-white font-semibold truncate">${user.username}</p>
+                            <p class="text-white/60 text-sm truncate">${user.email || ''}</p>
+                            <p class="${statusClass} text-xs mt-1">${statusText}</p>
                         </div>
-                        <div>
-                            ${actionButton}
-                        </div>
-                    </div>
-                `;
-            });
-
-            $('#searchResults').html(html);
+                        <div>${actionButton}</div>
+                    </div>`;
+            }).join('');
+            results.innerHTML = items;
         }
 
         function getStatusText(status) {
             switch(status) {
-                case 0: return 'Offline';
                 case 1: return 'Online';
                 case 2: return 'Away';
                 case 3: return 'Busy';
@@ -183,129 +212,98 @@
 
         function getStatusClass(status) {
             switch(status) {
-                case 0: return 'text-muted';
-                case 1: return 'text-success';
-                case 2: return 'text-warning';
-                case 3: return 'text-danger';
-                default: return 'text-muted';
+                case 1: return 'text-green-400';
+                case 2: return 'text-yellow-400';
+                case 3: return 'text-red-400';
+                default: return 'text-white/50';
             }
         }
 
         function getActionButton(friendStatus, userId) {
             switch(friendStatus) {
                 case 'Accepted':
-                    return '<span class="badge bg-success">Bạn bè</span>';
+                    return '<span class="px-3 py-1 rounded-xl bg-green-500/20 text-green-300 text-sm">Bạn bè</span>';
                 case 'Pending':
-                    return '<span class="badge bg-warning">Đã gửi lời mời</span>';
+                    return '<span class="px-3 py-1 rounded-xl bg-yellow-500/20 text-yellow-300 text-sm">Đã gửi lời mời</span>';
                 case 'Blocked':
-                    return '<button class="btn btn-outline-danger btn-sm" onclick="unblockUser(\'' + userId + '\')">Bỏ chặn</button>';
+                    return `<button class="px-4 py-2 rounded-xl border border-red-400/40 text-red-300 hover:bg-red-500/10" onclick="unblockUser('${userId}')">Bỏ chặn</button>`;
                 default:
-                    return '<button class="btn btn-primary btn-sm" onclick="sendFriendRequest(\'' + userId + '\')">Kết bạn</button>';
+                    return `<button class="px-4 py-2 rounded-xl bg-gradient-to-r from-purple-600 to-blue-600 text-white hover:from-purple-700 hover:to-blue-700" onclick="sendFriendRequest('${userId}')">Kết bạn</button>`;
             }
         }
 
-        function sendFriendRequest(userId) {
-            $.post('@Url.Action("SendFriendRequest", "Friend")', { friendId: userId })
-                .done(function(response) {
-                    if (response.success) {
-                        showAlert('success', response.message);
-                        searchUsers(); // Refresh search results
-                    } else {
-                        showAlert('danger', response.message);
-                    }
-                });
+        async function postJson(url, body) {
+            const res = await fetch(url, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+            return res.json();
         }
 
-        function acceptFriendRequest(friendId) {
-            $.post('@Url.Action("AcceptFriendRequest", "Friend")', { friendId: friendId })
-                .done(function(response) {
-                    if (response.success) {
-                        showAlert('success', response.message);
-                        loadFriendRequests();
-                        loadFriends();
-                    } else {
-                        showAlert('danger', response.message);
-                    }
-                });
+        async function sendFriendRequest(userId) {
+            const response = await postJson('@Url.Action("SendFriendRequest", "Friend")', { friendId: userId });
+            if (response.success) { showAlert('success', response.message); searchUsers(); }
+            else { showAlert('danger', response.message); }
         }
 
-        function declineFriendRequest(friendId) {
-            $.post('@Url.Action("DeclineFriendRequest", "Friend")', { friendId: friendId })
-                .done(function(response) {
-                    if (response.success) {
-                        showAlert('success', response.message);
-                        loadFriendRequests();
-                    } else {
-                        showAlert('danger', response.message);
-                    }
-                });
+        async function acceptFriendRequest(friendId) {
+            const response = await postJson('@Url.Action("AcceptFriendRequest", "Friend")', { friendId });
+            if (response.success) { showAlert('success', response.message); loadFriendRequests(); loadFriends(); }
+            else { showAlert('danger', response.message); }
         }
 
-        function removeFriend(friendId) {
-            if (confirm('Bạn có chắc chắn muốn xóa bạn bè này?')) {
-                $.post('@Url.Action("RemoveFriend", "Friend")', { friendId: friendId })
-                    .done(function(response) {
-                        if (response.success) {
-                            showAlert('success', response.message);
-                            loadFriends();
-                        } else {
-                            showAlert('danger', response.message);
-                        }
-                    });
-            }
+        async function declineFriendRequest(friendId) {
+            const response = await postJson('@Url.Action("DeclineFriendRequest", "Friend")', { friendId });
+            if (response.success) { showAlert('success', response.message); loadFriendRequests(); }
+            else { showAlert('danger', response.message); }
         }
 
-        function blockUser(userId) {
-            if (confirm('Bạn có chắc chắn muốn chặn người dùng này?')) {
-                $.post('@Url.Action("BlockUser", "Friend")', { userId: userId })
-                    .done(function(response) {
-                        if (response.success) {
-                            showAlert('success', response.message);
-                            loadFriends();
-                        } else {
-                            showAlert('danger', response.message);
-                        }
-                    });
-            }
+        async function removeFriend(friendId) {
+            if (!confirm('Bạn có chắc chắn muốn xóa bạn bè này?')) return;
+            const response = await postJson('@Url.Action("RemoveFriend", "Friend")', { friendId });
+            if (response.success) { showAlert('success', response.message); loadFriends(); }
+            else { showAlert('danger', response.message); }
         }
 
-        function unblockUser(userId) {
-            $.post('@Url.Action("UnblockUser", "Friend")', { userId: userId })
-                .done(function(response) {
-                    if (response.success) {
-                        showAlert('success', response.message);
-                        searchUsers();
-                    } else {
-                        showAlert('danger', response.message);
-                    }
-                });
+        async function blockUser(userId) {
+            if (!confirm('Bạn có chắc chắn muốn chặn người dùng này?')) return;
+            const response = await postJson('@Url.Action("BlockUser", "Friend")', { userId });
+            if (response.success) { showAlert('success', response.message); loadFriends(); }
+            else { showAlert('danger', response.message); }
+        }
+
+        async function unblockUser(userId) {
+            const response = await postJson('@Url.Action("UnblockUser", "Friend")', { userId });
+            if (response.success) { showAlert('success', response.message); searchUsers(); }
+            else { showAlert('danger', response.message); }
         }
 
         function updateFriendsCount() {
-            var count = $('#friendsList .friend-item').length;
-            $('#friendsCount').text(count);
-            $('#totalFriends').text(count);
+            const count = document.querySelectorAll('#friendsList .friend-item').length;
+            document.getElementById('friendsCount').textContent = count;
+            document.getElementById('totalFriends').textContent = count;
         }
 
         function updateRequestsCount() {
-            var count = $('#requestsList .request-item').length;
-            $('#requestsCount').text(count);
-            $('#pendingRequests').text(count);
+            const count = document.querySelectorAll('#requestsList .request-item').length;
+            document.getElementById('requestsCount').textContent = count;
+            document.getElementById('pendingRequests').textContent = count;
         }
 
         function showAlert(type, message) {
-            var alertHtml = `
-                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `;
-            $('body').prepend(alertHtml);
-            
-            // Auto dismiss after 3 seconds
-            setTimeout(function() {
-                $('.alert').alert('close');
-            }, 3000);
+            // type: success | danger
+            const color = type === 'success' ? 'green' : 'red';
+            const div = document.createElement('div');
+            div.className = `fixed top-4 right-4 z-50 px-4 py-3 rounded-2xl bg-${color}-500 text-white shadow-xl`;
+            div.textContent = message;
+            document.body.appendChild(div);
+            setTimeout(() => div.remove(), 3000);
         }
+
+        // Events
+        document.getElementById('searchBtn').addEventListener('click', searchUsers);
+        document.getElementById('refreshBtn').addEventListener('click', () => { loadFriends(); loadFriendRequests(); });
+        document.addEventListener('DOMContentLoaded', function() {
+            setActiveTab('friends');
+            loadFriends();
+            loadFriendRequests();
+        });
     </script>
 }

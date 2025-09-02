@@ -1,186 +1,406 @@
-﻿@model IEnumerable<OkeanBook.Models.ViewModels.PostViewModel>
-
+﻿@model OkeanBook.Models.ViewModels.HomeViewModel
+@using System.Security.Claims
+@inject OkeanBook.Services.Interfaces.IUserService UserService
 @{
-    ViewData["Title"] = "Trang chủ";
+    ViewData["Title"] = "Trang chủ - OkeanBook";
+    var __userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+    OkeanBook.Models.ApplicationUser? __currentUser = null;
+    if (!string.IsNullOrEmpty(__userId))
+    {
+        __currentUser = await UserService.GetUserByIdAsync(__userId);
+    }
+    var __avatarUrl = (__currentUser?.Avatar?.StartsWith("http") == true)
+        ? __currentUser.Avatar
+        : Url.Content(__currentUser?.Avatar ?? "~/img/default-avatar.png");
 }
 
-<div class="row">
-    <!-- Sidebar trái -->
-    <div class="col-md-3">
-        <div class="card mb-3">
-            <div class="card-body">
-                <h6 class="card-title">Tạo bài viết</h6>
-                <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
-                    <div class="mb-3">
-                        <textarea name="Content" class="form-control" rows="3" placeholder="Bạn đang nghĩ gì?" required></textarea>
-                    </div>
-                    <div class="mb-3">
-                        <input type="file" name="MediaFile" class="form-control" accept="image/*,video/*">
-                    </div>
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-sm">
-                            <i class="fas fa-paper-plane me-1"></i>Đăng
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">Tìm kiếm</h6>
-            </div>
-            <div class="card-body">
-                <form asp-action="Search" method="get">
-                    <div class="input-group">
-                        <input type="text" name="query" class="form-control" placeholder="Tìm kiếm bài viết...">
-                        <button type="submit" class="btn btn-outline-secondary">
-                            <i class="fas fa-search"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
-    </div>
-
-    <!-- Nội dung chính -->
-    <div class="col-md-6">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4>Bảng tin</h4>
-            <div class="btn-group" role="group">
-                <button type="button" class="btn btn-outline-primary btn-sm active">
-                    <i class="fas fa-home me-1"></i>Tất cả
-                </button>
-                <button type="button" class="btn btn-outline-primary btn-sm">
-                    <i class="fas fa-users me-1"></i>Bạn bè
-                </button>
-            </div>
-        </div>
-
-        @if (Model != null && Model.Any())
-        {
-            @foreach (var post in Model)
-            {
-                <div class="card mb-3 post-item" data-post-id="@post.Id">
-                    <div class="card-body">
-                        <!-- Header bài viết -->
-                        <div class="d-flex align-items-center mb-3">
-                            <img src="@(post.UserAvatar ?? "/img/default-avatar.png")" alt="Avatar" class="rounded-circle me-2" width="40" height="40">
-                            <div>
-                                <h6 class="mb-0">@post.UserName</h6>
-                                <small class="text-muted">@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
-                            </div>
-                        </div>
-
-                        <!-- Nội dung bài viết -->
-                        <p class="card-text">@post.Content</p>
-
-                        <!-- Media -->
-                        @if (!string.IsNullOrEmpty(post.MediaUrl))
-                        {
-                            <div class="mb-3">
-                                @if (post.Type == OkeanBook.Models.PostType.Image)
+<div class="min-h-screen bg-gray-900 py-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+            <!-- Sidebar Left -->
+            <div class="lg:col-span-3">
+                <div class="bg-gray-800 rounded-lg border border-gray-700 shadow-lg">
+                    <div class="p-4">
+                        <h5 class="text-white font-semibold mb-4 flex items-center">
+                            <i class="fas fa-user-friends text-blue-400 mr-3"></i>
+                            Bạn bè gần đây
+                        </h5>
+                        <div class="space-y-3">
+                            @if (Model.RecentFriends != null && Model.RecentFriends.Any())
+                            {
+                                foreach (var f in Model.RecentFriends)
                                 {
-                                    <img src="@post.MediaUrl" class="img-fluid rounded" alt="Post image">
-                                }
-                                else if (post.Type == OkeanBook.Models.PostType.Video)
-                                {
-                                    <video src="@post.MediaUrl" class="img-fluid rounded" controls></video>
-                                }
-                            </div>
-                        }
-
-                        <!-- Actions -->
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-outline-primary btn-sm like-btn" data-post-id="@post.Id">
-                                    <i class="fas fa-heart @(post.IsLiked ? "text-danger" : "")"></i>
-                                    <span class="like-count">@post.LikeCount</span>
-                                </button>
-                                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#comments-@post.Id">
-                                    <i class="fas fa-comment"></i>
-                                    <span>@post.CommentCount</span>
-                                </button>
-                                <button type="button" class="btn btn-outline-primary btn-sm">
-                                    <i class="fas fa-share"></i>
-                                    <span>@post.ShareCount</span>
-                                </button>
-                            </div>
-                        </div>
-
-                        <!-- Form bình luận -->
-                        <div class="collapse mt-3" id="comments-@post.Id">
-                            <form asp-action="CreateComment" method="post" class="comment-form" data-post-id="@post.Id">
-                                <input type="hidden" name="PostId" value="@post.Id">
-                                <div class="input-group">
-                                    <input type="text" name="Content" class="form-control" placeholder="Viết bình luận..." required>
-                                    <button type="submit" class="btn btn-primary">
-                                        <i class="fas fa-paper-plane"></i>
-                                    </button>
-                                </div>
-                            </form>
-
-                            <!-- Danh sách bình luận -->
-                            <div class="mt-3" id="comments-list-@post.Id">
-                                @if (post.Comments != null && post.Comments.Any())
-                                {
-                                    @foreach (var comment in post.Comments.Take(3))
-                                    {
-                                        <div class="d-flex align-items-start mb-2">
-                                            <img src="@(comment.UserAvatar ?? "/img/default-avatar.png")" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
-                                            <div class="flex-grow-1">
-                                                <div class="bg-light rounded p-2">
-                                                    <strong>@comment.UserName</strong>
-                                                    <p class="mb-1">@comment.Content</p>
-                                                    <small class="text-muted">@comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
-                                                </div>
+                                    var avatar = !string.IsNullOrEmpty(f.Avatar) && f.Avatar.StartsWith("http") ? f.Avatar : Url.Content(f.Avatar ?? "~/img/default-avatar.png");
+                                    <a href="#" class="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                                        <div class="flex items-center">
+                                            <img src="@avatar" alt="Avatar" class="w-10 h-10 rounded-full mr-3">
+                                            <div>
+                                                <h6 class="text-white font-medium">@f.UserName</h6>
+                                                <small class="text-gray-400">Bạn bè</small>
                                             </div>
                                         </div>
-                                    }
-                                    
-                                    @if (post.Comments.Count() > 3)
-                                    {
-                                        <button type="button" class="btn btn-link btn-sm p-0" onclick="loadMoreComments(@post.Id)">
-                                            Xem thêm @(post.CommentCount - 3) bình luận
-                                        </button>
-                                    }
+                                    </a>
                                 }
+                            }
+                            else
+                            {
+                                <div class="text-gray-400 text-sm px-3 py-2">Chưa có dữ liệu</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-gray-800 rounded-lg border border-gray-700 shadow-lg mt-6">
+                    <div class="p-4">
+                        <h5 class="text-white font-semibold mb-4 flex items-center">
+                            <i class="fas fa-layer-group text-green-400 mr-3"></i>
+                            Nhóm của bạn
+                        </h5>
+                        <div class="space-y-3">
+                            @if (Model.UserGroups != null && Model.UserGroups.Any())
+                            {
+                                foreach (var g in Model.UserGroups)
+                                {
+                                    var gImg = Url.Content(g.ImageUrl ?? "~/img/default-group.png");
+                                    <a href="#" class="block p-3 rounded-lg hover:bg-gray-700 transition-colors">
+                                        <div class="flex items-center">
+                                            <img src="@gImg" alt="Group" class="w-10 h-10 rounded-full mr-3">
+                                            <div>
+                                                <h6 class="text-white font-medium">@g.Name</h6>
+                                                <small class="text-gray-400">@g.MemberCount thành viên</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                }
+                            }
+                            else
+                            {
+                                <div class="text-gray-400 text-sm px-3 py-2">Chưa tham gia nhóm nào</div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Main Content -->
+        <div class="lg:col-span-6">
+            <!-- Enhanced Create Post Card -->
+            <div class="bg-gradient-to-br from-slate-800 via-purple-900/20 to-slate-800 rounded-3xl border border-purple-500/20 shadow-2xl mb-8 overflow-hidden backdrop-blur-sm" x-data="{ postFormOpen: false }">
+                <div class="p-8">
+                    <!-- Header Section -->
+                    <div class="flex items-center mb-6">
+                        <div class="relative">
+                            <img src="@__avatarUrl" alt="Avatar" class="w-14 h-14 rounded-2xl ring-4 ring-purple-500/30 shadow-lg">
+                            <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                        </div>
+                        <div class="flex-1 ml-5">
+                            <div class="bg-white/10 backdrop-blur-sm hover:bg-white/20 transition-all duration-300 rounded-3xl px-6 py-4 cursor-pointer border border-white/20 hover:border-purple-400/50 group" @@click="postFormOpen = true">
+                                <span class="text-white/90 group-hover:text-white text-lg">@(User.Identity?.Name ?? "Người dùng"), bạn đang nghĩ gì?</span>
+                                <div class="mt-2 flex items-center text-white/60 text-sm">
+                                    <i class="fas fa-lightbulb mr-2 text-yellow-400"></i>
+                                    <span>Chia sẻ suy nghĩ, ảnh hoặc video với bạn bè</span>
+                                </div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <!-- Enhanced Post Form -->
+                    <form asp-controller="Home" asp-action="CreatePost" method="post" enctype="multipart/form-data">
+                        <div class="mb-6" x-show="postFormOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+                            <div class="relative">
+                                <textarea 
+                                    class="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl p-6 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400/50 resize-none text-lg leading-relaxed transition-all duration-300" 
+                                    name="content" 
+                                    rows="4" 
+                                    placeholder="Viết gì đó thú vị..." 
+                                    id="postTextarea"
+                                    @@input="autoResize($event.target)"
+                                ></textarea>
+                                
+                                <!-- Character Counter -->
+                                <div class="absolute bottom-4 right-4 text-white/40 text-sm">
+                                    <span id="charCount">0</span>/500
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Enhanced Action Bar -->
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center pt-6 border-t border-white/20" x-show="postFormOpen" x-transition:enter="transition ease-out duration-300" x-transition:enter-start="opacity-0 translate-y-4" x-transition:enter-end="opacity-100 translate-y-0">
+                            <!-- Media Actions -->
+                            <div class="flex flex-wrap gap-3 mb-4 sm:mb-0">
+                                <button type="button" class="group flex items-center px-5 py-3 bg-gradient-to-r from-green-500/20 to-emerald-500/20 hover:from-green-500/30 hover:to-emerald-500/30 text-green-300 hover:text-green-200 rounded-2xl transition-all duration-300 border border-green-500/30 hover:border-green-400/50 hover:scale-105">
+                                    <i class="fas fa-image mr-3 text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                                    <span class="font-medium">Ảnh</span>
+                                </button>
+                                <button type="button" class="group flex items-center px-5 py-3 bg-gradient-to-r from-blue-500/20 to-indigo-500/20 hover:from-blue-500/30 hover:to-indigo-500/30 text-blue-300 hover:text-blue-200 rounded-2xl transition-all duration-300 border border-blue-500/30 hover:border-blue-400/50 hover:scale-105">
+                                    <i class="fas fa-video mr-3 text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                                    <span class="font-medium">Video</span>
+                                </button>
+                                <button type="button" class="group flex items-center px-5 py-3 bg-gradient-to-r from-yellow-500/20 to-orange-500/20 hover:from-yellow-500/30 hover:to-orange-500/30 text-yellow-300 hover:text-yellow-200 rounded-2xl transition-all duration-300 border border-yellow-500/30 hover:border-yellow-400/50 hover:scale-105">
+                                    <i class="fas fa-smile mr-3 text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                                    <span class="font-medium">Cảm xúc</span>
+                                </button>
+                                <button type="button" class="group flex items-center px-5 py-3 bg-gradient-to-r from-purple-500/20 to-pink-500/20 hover:from-purple-500/30 hover:to-pink-500/30 text-purple-300 hover:text-purple-200 rounded-2xl transition-all duration-300 border border-purple-500/30 hover:border-purple-400/50 hover:scale-105">
+                                    <i class="fas fa-map-marker-alt mr-3 text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                                    <span class="font-medium">Vị trí</span>
+                                </button>
+</div>
+
+                            <!-- Submit Button -->
+                            <button type="submit" class="group bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-2xl font-semibold transition-all duration-300 flex items-center shadow-lg hover:shadow-xl hover:scale-105 transform">
+                                <i class="fas fa-paper-plane mr-3 group-hover:scale-110 transition-transform duration-200"></i>
+                                <span>Đăng bài</span>
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Enhanced Posts Feed -->
+            @if (Model?.Posts != null && Model.Posts.Any())
+            {
+                @foreach (var post in Model.Posts)
+                {
+                    <div class="bg-gradient-to-br from-slate-800 via-purple-900/10 to-slate-800 rounded-3xl border border-purple-500/20 shadow-2xl mb-8 overflow-hidden backdrop-blur-sm" x-data="{ postMenuOpen: false, isLiked: false }">
+                        <div class="p-8">
+                            <!-- Enhanced Post Header -->
+                            <div class="flex items-start justify-between mb-6">
+                                <div class="flex items-center space-x-4">
+                                    <div class="relative">
+                                        <img src="@(post.UserAvatar ?? "~/img/default-avatar.png")" alt="Avatar" class="w-14 h-14 rounded-2xl ring-4 ring-purple-500/30 shadow-lg">
+                                        <div class="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                                    </div>
+                                    <div class="flex-1">
+                                        <div class="flex items-center space-x-3 mb-1">
+                                            <h6 class="text-white font-bold text-lg">@post.UserName</h6>
+                                            <span class="px-2 py-1 bg-purple-500/20 text-purple-300 text-xs rounded-full border border-purple-500/30">Bạn bè</span>
+                                        </div>
+                                        <div class="flex items-center text-white/60 text-sm space-x-4">
+                                            <span class="flex items-center">
+                                                <i class="fas fa-clock mr-2"></i>
+                                                @post.CreatedAt.ToString("dd/MM/yyyy HH:mm")
+                                            </span>
+                                            <span class="flex items-center">
+                                                <i class="fas fa-globe mr-2"></i>
+                                                Công khai
+                                            </span>
+                                        </div>
+                                    </div>
+</div>
+
+                                <!-- Enhanced Post Menu -->
+                                <div class="relative">
+                                    <button class="group p-3 rounded-2xl text-white/70 hover:text-white hover:bg-white/10 transition-all duration-300" @@click="postMenuOpen = !postMenuOpen">
+                                        <i class="fas fa-ellipsis-h text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                                    </button>
+                                    <div x-show="postMenuOpen" @@click.away="postMenuOpen = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="absolute right-0 mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 z-50 overflow-hidden">
+                                        <div class="py-2">
+                                            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200 group">
+                                                <i class="fas fa-edit mr-3 text-purple-500 group-hover:scale-110 transition-transform duration-200"></i>
+                                                <span class="font-medium">Chỉnh sửa</span>
+                                            </a>
+                                            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200 group">
+                                                <i class="fas fa-copy mr-3 text-blue-500 group-hover:scale-110 transition-transform duration-200"></i>
+                                                <span class="font-medium">Sao chép link</span>
+                                            </a>
+                                            <a href="#" class="flex items-center px-4 py-3 text-gray-700 hover:text-green-600 hover:bg-green-50 transition-all duration-200 group">
+                                                <i class="fas fa-bookmark mr-3 text-green-500 group-hover:scale-110 transition-transform duration-200"></i>
+                                                <span class="font-medium">Lưu bài viết</span>
+                                            </a>
+                                            <hr class="border-gray-200 my-2">
+                                            <a href="#" class="flex items-center px-4 py-3 text-red-600 hover:text-red-700 hover:bg-red-50 transition-all duration-200 group">
+                                                <i class="fas fa-trash mr-3 group-hover:scale-110 transition-transform duration-200"></i>
+                                                <span class="font-medium">Xóa</span>
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Enhanced Post Content -->
+                            <div class="mb-8">
+                                <p class="text-white text-xl leading-relaxed font-medium">@post.Content</p>
+                                @if (!string.IsNullOrEmpty(post.MediaUrl))
+                                {
+                                    <div class="mt-6">
+                                        <div class="relative group overflow-hidden rounded-2xl">
+                                            <img src="@post.MediaUrl" alt="Post Media" class="w-full h-auto object-cover group-hover:scale-105 transition-transform duration-500">
+                                            <div class="absolute inset-0 bg-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+
+                            <!-- Enhanced Post Stats -->
+                            <div class="flex justify-between items-center mb-6 p-5 bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20">
+                                <div class="flex items-center space-x-8">
+                                    <span class="flex items-center text-white/80 hover:text-white transition-colors duration-200 cursor-pointer group">
+                                        <i class="fas fa-heart mr-3 text-red-400 group-hover:scale-110 transition-transform duration-200"></i>
+                                        <span class="font-medium">@post.LikeCount</span>
+                                    </span>
+                                    <span class="flex items-center text-white/80 hover:text-white transition-colors duration-200 cursor-pointer group">
+                                        <i class="fas fa-comment mr-3 text-blue-400 group-hover:scale-110 transition-transform duration-200"></i>
+                                        <span class="font-medium">@post.CommentCount</span>
+                                    </span>
+                                    <span class="flex items-center text-white/80 hover:text-white transition-colors duration-200 cursor-pointer group">
+                                        <i class="fas fa-eye mr-3 text-purple-400 group-hover:scale-110 transition-transform duration-200"></i>
+                                        <span class="font-medium">@(post.LikeCount + post.CommentCount + 15)</span>
+                                    </span>
+                                </div>
+                                <div class="text-white/80 flex items-center cursor-pointer group">
+                                    <i class="fas fa-share mr-3 text-green-400 group-hover:scale-110 transition-transform duration-200"></i>
+                                    <span class="font-medium">@post.ShareCount</span>
+                                </div>
+                            </div>
+
+                            <!-- Enhanced Post Actions -->
+                            <div class="border-t border-white/20 pt-6">
+                                <div class="grid grid-cols-3 gap-4">
+                                    <button class="group flex items-center justify-center py-4 px-6 text-white/80 hover:text-red-400 hover:bg-red-500/10 rounded-2xl transition-all duration-300 post-action-btn border border-transparent hover:border-red-500/30" data-action="like" data-post-id="@post.Id" @@click="isLiked = !isLiked">
+                                        <i class="fas fa-heart mr-3 text-lg group-hover:scale-110 transition-transform duration-200" :class="isLiked ? 'text-red-400' : 'text-white/60'"></i>
+                                        <span class="font-medium" :class="isLiked ? 'text-red-400' : ''">Thích</span>
+                                    </button>
+                                    <button class="group flex items-center justify-center py-4 px-6 text-white/80 hover:text-blue-400 hover:bg-blue-500/10 rounded-2xl transition-all duration-300 post-action-btn border border-transparent hover:border-blue-500/30" data-action="comment" data-post-id="@post.Id">
+                                        <i class="fas fa-comment mr-3 text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                                        <span class="font-medium">Bình luận</span>
+                                    </button>
+                                    <button class="group flex items-center justify-center py-4 px-6 text-white/80 hover:text-green-400 hover:bg-green-500/10 rounded-2xl transition-all duration-300 post-action-btn border border-transparent hover:border-green-500/30" data-action="share" data-post-id="@post.Id">
+                                        <i class="fas fa-share mr-3 text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                                        <span class="font-medium">Chia sẻ</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="bg-gray-800 rounded-xl border border-gray-700 shadow-lg text-center py-16">
+                    <div class="max-w-md mx-auto">
+                        <i class="fas fa-newspaper text-gray-500 text-6xl mb-6"></i>
+                        <h5 class="text-gray-400 text-xl font-semibold mb-3">Chưa có bài viết nào</h5>
+                        <p class="text-gray-500">Hãy tạo bài viết đầu tiên của bạn!</p>
                     </div>
                 </div>
             }
-        }
-        else
-        {
-            <div class="text-center py-5">
-                <i class="fas fa-newspaper text-muted" style="font-size: 3rem;"></i>
-                <h5 class="mt-3 text-muted">Chưa có bài viết nào</h5>
-                <p class="text-muted">Hãy tạo bài viết đầu tiên hoặc kết bạn để xem nội dung!</p>
-            </div>
-        }
-    </div>
-
-    <!-- Sidebar phải -->
-    <div class="col-md-3">
-        <div class="card mb-3">
-            <div class="card-header">
-                <h6 class="mb-0">Bạn bè online</h6>
-            </div>
-            <div class="card-body">
-                <div id="online-friends">
-                    <p class="text-muted text-center">Đang tải...</p>
-                </div>
-            </div>
         </div>
 
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">Thông báo</h6>
+        <!-- Enhanced Right Sidebar -->
+        <div class="lg:col-span-3 space-y-6">
+            <!-- Enhanced Notifications -->
+            <div class="bg-gradient-to-br from-slate-800 via-purple-900/20 to-slate-800 rounded-3xl border border-purple-500/20 shadow-2xl backdrop-blur-sm">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h5 class="text-white font-bold text-lg flex items-center">
+                            <i class="fas fa-bell text-yellow-400 mr-3 text-xl"></i>
+                            Thông báo
+                        </h5>
+                        <span class="px-3 py-1 bg-red-500/20 text-red-300 text-xs rounded-full border border-red-500/30">@Model.UnreadNotificationCount mới</span>
+                    </div>
+                    <div class="space-y-4">
+                        @if (Model.Notifications != null && Model.Notifications.Any())
+                        {
+                            foreach (var n in Model.Notifications)
+                            {
+                                <a href="#" class="group block p-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-2xl transition-all duration-300 border border-white/20 hover:border-purple-400/50 hover:scale-105 transform">
+                                    <div class="flex items-center">
+                                        <div class="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-500 rounded-2xl flex items-center justify-center flex-shrink-0 mr-4 group-hover:scale-110 transition-transform duration-200">
+                                            <i class="fas fa-bell text-white text-lg"></i>
+                                        </div>
+                                        <div class="flex-1">
+                                            <h6 class="text-white font-semibold mb-1 group-hover:text-purple-200 transition-colors duration-200">@n.Title</h6>
+                                            <p class="text-white/70 text-sm">@n.Message</p>
+                                            <p class="text-purple-300 text-xs mt-1">@n.CreatedAgo</p>
+                                        </div>
+                                    </div>
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-white/60 text-sm">Không có thông báo</div>
+                        }
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-white/20">
+                        <a href="#" class="block text-center text-purple-300 hover:text-purple-200 font-medium transition-colors duration-200">Xem tất cả thông báo</a>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div id="notifications">
-                    <p class="text-muted text-center">Đang tải...</p>
+
+            <!-- Enhanced Friend Suggestions -->
+            <div class="bg-gradient-to-br from-slate-800 via-purple-900/20 to-slate-800 rounded-3xl border border-purple-500/20 shadow-2xl backdrop-blur-sm">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-6">
+                        <h5 class="text-white font-bold text-lg flex items-center">
+                            <i class="fas fa-users text-blue-400 mr-3 text-xl"></i>
+                            Gợi ý kết bạn
+                        </h5>
+                        <span class="px-3 py-1 bg-blue-500/20 text-blue-300 text-xs rounded-full border border-blue-500/30">@(Model.FriendSuggestions?.Count() ?? 0) người</span>
+                    </div>
+                    <div class="space-y-4">
+                        @if (Model.FriendSuggestions != null && Model.FriendSuggestions.Any())
+                        {
+                            foreach (var u in Model.FriendSuggestions)
+                            {
+                                <div class="group p-4 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-2xl transition-all duration-300 border border-white/20 hover:border-blue-400/50 hover:scale-105 transform">
+                                    <div class="flex items-center">
+                                        <div class="relative">
+                                            <img src="@(u.Avatar ?? Url.Content("~/img/default-avatar.png"))" alt="Avatar" class="w-14 h-14 rounded-2xl ring-2 ring-blue-500/30 shadow-lg">
+                                            <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                                        </div>
+                                        <div class="flex-1 ml-4">
+                                            <h6 class="text-white font-semibold mb-1 group-hover:text-blue-200 transition-colors duration-200">@u.UserName</h6>
+                                            <p class="text-white/70 text-sm mb-2">Bạn bè gợi ý</p>
+                                        </div>
+                                        <div class="flex flex-col space-y-2">
+                                            <button class="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 hover:scale-105 transform shadow-lg">
+                                                <i class="fas fa-user-plus mr-2"></i>Kết bạn
+                                            </button>
+                                            <button class="bg-white/10 hover:bg-white/20 text-white/80 hover:text-white px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 border border-white/20 hover:border-white/40">
+                                                <i class="fas fa-user-times mr-2"></i>Bỏ qua
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-white/60 text-sm">Không có gợi ý</div>
+                        }
+                    </div>
+                    <div class="mt-6 pt-4 border-t border-white/20">
+                        <a href="#" class="block text-center text-blue-300 hover:text-blue-200 font-medium transition-colors duration-200">Xem tất cả gợi ý</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Trending Topics -->
+            <div class="bg-gradient-to-br from-slate-800 via-purple-900/20 to-slate-800 rounded-3xl border border-purple-500/20 shadow-2xl backdrop-blur-sm">
+                <div class="p-6">
+                    <h5 class="text-white font-bold text-lg flex items-center mb-6">
+                        <i class="fas fa-fire text-orange-400 mr-3 text-xl"></i>
+                        Chủ đề nổi bật
+                    </h5>
+                    <div class="space-y-3">
+                        @if (Model.TrendingTopics != null && Model.TrendingTopics.Any())
+                        {
+                            foreach (var t in Model.TrendingTopics)
+                            {
+                                <a href="#" class="group block p-3 bg-white/10 backdrop-blur-sm hover:bg-white/20 rounded-xl transition-all duration-300 border border-white/20 hover:border-orange-400/50">
+                                    <div class="flex items-center justify-between">
+                                        <span class="text-white/90 group-hover:text-white transition-colors duration-200">@t.Hashtag</span>
+                                        <span class="text-orange-400 text-xs font-medium">@t.PostCount bài viết</span>
+                                    </div>
+                                </a>
+                            }
+                        }
+                        else
+                        {
+                            <div class="text-white/60 text-sm">Chưa có chủ đề nổi bật</div>
+                        }
+                    </div>
                 </div>
             </div>
         </div>
@@ -189,68 +409,43 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            // Load bạn bè online
-            loadOnlineFriends();
-            
-            // Load thông báo
-            loadNotifications();
-            
-            // Xử lý like bài viết
-            $('.like-btn').click(function() {
-                var postId = $(this).data('post-id');
-                toggleLike(postId);
-            });
-            
-            // Xử lý bình luận
-            $('.comment-form').submit(function(e) {
-                e.preventDefault();
-                var postId = $(this).data('post-id');
-                var content = $(this).find('input[name="Content"]').val();
-                createComment(postId, content);
-            });
-        });
+        // Alpine.js functions
+        function autoResize(textarea) {
+            textarea.style.height = 'auto';
+            textarea.style.height = Math.min(textarea.scrollHeight, 120) + 'px';
+        }
 
-        function toggleLike(postId) {
-            $.post('@Url.Action("ToggleLike", "Home")', { postId: postId })
-                .done(function(response) {
-                    if (response.success) {
-                        var btn = $('.like-btn[data-post-id="' + postId + '"]');
-                        var icon = btn.find('i');
-                        var count = btn.find('.like-count');
-                        
-                        if (response.isLiked) {
-                            icon.addClass('text-danger');
+        // Post action buttons with modern interactions
+        document.addEventListener('DOMContentLoaded', function() {
+            // Post action buttons
+            document.querySelectorAll('.post-action-btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const action = this.dataset.action;
+                    const postId = this.dataset.postId;
+                    
+                    if (action === 'like') {
+                        const icon = this.querySelector('i');
+                        if (icon.classList.contains('far')) {
+                            icon.classList.remove('far');
+                            icon.classList.add('fas');
+                            this.classList.remove('text-gray-400');
+                            this.classList.add('text-red-400');
                         } else {
-                            icon.removeClass('text-danger');
+                            icon.classList.remove('fas');
+                            icon.classList.add('far');
+                            this.classList.remove('text-red-400');
+                            this.classList.add('text-gray-400');
                         }
-                        
-                        count.text(response.likeCount);
+                    } else if (action === 'comment') {
+                        // Focus on comment input or show comment form
+                        console.log('Comment on post:', postId);
+                    } else if (action === 'share') {
+                        // Show share modal
+                        console.log('Share post:', postId);
                     }
                 });
-        }
-
-        function createComment(postId, content) {
-            $.post('@Url.Action("CreateComment", "Home")', {
-                PostId: postId,
-                Content: content
-            }).done(function(response) {
-                if (response.success) {
-                    location.reload();
-                }
             });
-        }
-
-        function loadOnlineFriends() {
-            // TODO: Implement load online friends
-        }
-
-        function loadNotifications() {
-            // TODO: Implement load notifications
-        }
-
-        function loadMoreComments(postId) {
-            // TODO: Implement load more comments
-        }
+        });
     </script>
 }

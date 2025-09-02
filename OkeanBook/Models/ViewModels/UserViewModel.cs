@@ -1,4 +1,5 @@
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Http;
 
 namespace OkeanBook.Models.ViewModels
 {
@@ -20,40 +21,7 @@ namespace OkeanBook.Models.ViewModels
         public FriendStatus? FriendStatus { get; set; }
     }
 
-    public class RegisterViewModel
-    {
-        [Required(ErrorMessage = "Tên đăng nhập là bắt buộc")]
-        [StringLength(50, ErrorMessage = "Tên đăng nhập không được vượt quá 50 ký tự")]
-        public string UserName { get; set; } = string.Empty;
 
-        [Required(ErrorMessage = "Email là bắt buộc")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
-        public string Email { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Mật khẩu là bắt buộc")]
-        [StringLength(100, ErrorMessage = "Mật khẩu phải có ít nhất {2} ký tự", MinimumLength = 6)]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
-
-        [DataType(DataType.Password)]
-        [Display(Name = "Xác nhận mật khẩu")]
-        [Compare("Password", ErrorMessage = "Mật khẩu xác nhận không khớp")]
-        public string ConfirmPassword { get; set; } = string.Empty;
-    }
-
-    public class LoginViewModel
-    {
-        [Required(ErrorMessage = "Email là bắt buộc")]
-        [EmailAddress(ErrorMessage = "Email không hợp lệ")]
-        public string Email { get; set; } = string.Empty;
-
-        [Required(ErrorMessage = "Mật khẩu là bắt buộc")]
-        [DataType(DataType.Password)]
-        public string Password { get; set; } = string.Empty;
-
-        [Display(Name = "Ghi nhớ đăng nhập")]
-        public bool RememberMe { get; set; }
-    }
 
     public class ProfileViewModel
     {
@@ -65,6 +33,18 @@ namespace OkeanBook.Models.ViewModels
         public UserStatus Status { get; set; }
         public DateTime CreatedAt { get; set; }
         public DateTime? LastSeen { get; set; }
+        
+        // Additional profile properties
+        public string? FullName { get; set; }
+        public DateTime? DateOfBirth { get; set; }
+        public string? Gender { get; set; }
+        public string? Address { get; set; }
+        public string? PhoneNumber { get; set; }
+        public string? Website { get; set; }
+        public string? Job { get; set; }
+        public string? Company { get; set; }
+        public string? Education { get; set; }
+        public string? Interests { get; set; }
     }
 
     public class EditProfileViewModel

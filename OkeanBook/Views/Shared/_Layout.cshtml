@@ -4,128 +4,278 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] - OkeanBook</title>
-    <link rel="icon" type="image/jpeg" href="~/img/logo.jpg" />
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="icon" type="image/jpeg" href="~/css/img/logo.jpg" />
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Font Awesome 6.5.1 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" integrity="sha512-DTOQO9RWCH3ppGqcWaEA1BIZOC6xxalwEsw9c2QQeAIftl+Vegovlnee1c9QX4TctnWMn13TZye+giMm8e2LwA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <!-- Custom CSS -->
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/OkeanBook.styles.css" asp-append-version="true" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
 </head>
 <body>
+    @using System.Security.Claims
+    @inject OkeanBook.Services.Interfaces.IUserService UserService
+    @{
+        var __userId = User?.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        OkeanBook.Models.ApplicationUser? __currentUser = null;
+        if (!string.IsNullOrEmpty(__userId))
+        {
+            __currentUser = await UserService.GetUserByIdAsync(__userId);
+        }
+        var __avatarUrl = (__currentUser?.Avatar?.StartsWith("http") == true)
+            ? __currentUser.Avatar
+            : Url.Content(__currentUser?.Avatar ?? "~/img/default-avatar.png");
+    }
     @if (User.Identity?.IsAuthenticated == true)
     {
-        <!-- Navigation cho người dùng đã đăng nhập -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-            <div class="container-fluid">
-                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
-                    <img src="~/img/logo.jpg" alt="OkeanBook" width="32" height="32" class="me-2 rounded-circle">
-                    OkeanBook
-                </a>
-                
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                
-                <div class="collapse navbar-collapse" id="navbarNav">
-                    <ul class="navbar-nav me-auto">
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Home" asp-action="Index">
-                                <i class="fas fa-home me-1"></i>Trang chủ
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Chat" asp-action="Index">
-                                <i class="fas fa-comments me-1"></i>Chat
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Friend" asp-action="Index">
-                                <i class="fas fa-users me-1"></i>Bạn bè
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link" asp-controller="Group" asp-action="Index">
-                                <i class="fas fa-user-friends me-1"></i>Nhóm
-                            </a>
-                        </li>
-                    </ul>
+        <!-- Modern Professional Navigation -->
+        <nav class="bg-gradient-to-r from-slate-900 via-purple-900 to-slate-900 border-b border-purple-700/50 sticky top-0 z-50 shadow-2xl backdrop-blur-sm">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="grid grid-cols-[auto,1fr,auto] items-center h-20 gap-4">
+                    <!-- Logo Section -->
+                    <a class="group flex items-center space-x-4 text-white font-bold text-2xl transition-all duration-300 hover:scale-105 shrink-0" asp-controller="Home" asp-action="Index">
+                        <div class="relative shrink-0">
+                            <img src="/css/img/logo.jpg" alt="OkeanBook" loading="eager" class="block w-10 h-10 lg:w-12 lg:h-12 object-contain rounded-2xl shadow-lg ring-2 ring-purple-500/50 group-hover:ring-purple-400 relative z-10 select-none shrink-0" />
+                            <div class="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/20 to-blue-500/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none z-0"></div>
+                        </div>
+                        <span class="bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent hidden lg:inline-block">OkeanBook</span>
+                    </a>
                     
-                    <ul class="navbar-nav">
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle" href="#" id="notificationDropdown" role="button" data-bs-toggle="dropdown">
-                                <i class="fas fa-bell me-1"></i>
-                                <span class="badge bg-danger" id="notificationBadge" style="display: none;">0</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end" id="notificationList">
-                                <li><h6 class="dropdown-header">Thông báo</h6></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li><a class="dropdown-item text-center" href="#">Không có thông báo mới</a></li>
-                            </ul>
-                        </li>
+                    <!-- Mobile Menu Button -->
+                    <button class="md:hidden text-white hover:text-purple-300 p-2 rounded-lg hover:bg-white/10 transition-all duration-300" x-data @@click="$store.mobileMenu.toggle()">
+                        <i class="fas fa-bars text-xl"></i>
+                    </button>
+                    
+                    <!-- Desktop Navigation -->
+                    <div class="hidden md:flex items-center justify-center space-x-1 min-w-0 overflow-hidden justify-self-center overflow-x-auto whitespace-nowrap flex-nowrap z-0">
+                        <a class="group relative px-2 lg:px-4 py-2.5 lg:py-3 rounded-xl text-white/90 hover:text-white transition-all duration-300 hover:bg-white/10 whitespace-nowrap" asp-controller="Home" asp-action="Index">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-home md:text-base lg:text-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0"></i>
+                                <span class="font-medium hidden lg:inline">Trang chủ</span>
+                            </div>
+                            <div class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-blue-400 group-hover:w-full transition-all duration-300 transform -translate-x-1/2"></div>
+                        </a>
                         
-                        <li class="nav-item dropdown">
-                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                                <img id="userAvatar" src="~/img/default-avatar.png" alt="Avatar" width="24" height="24" class="rounded-circle me-1">
-                                <span id="userName">@User.Identity.Name</span>
-                            </a>
-                            <ul class="dropdown-menu dropdown-menu-end">
-                                <li><a class="dropdown-item" asp-controller="Profile" asp-action="Index">
-                                    <i class="fas fa-user me-2"></i>Hồ sơ của tôi
-                                </a></li>
-                                <li><a class="dropdown-item" asp-controller="Profile" asp-action="Edit">
-                                    <i class="fas fa-edit me-2"></i>Chỉnh sửa hồ sơ
-                                </a></li>
-                                <li><hr class="dropdown-divider"></li>
-                                <li>
-                                    <form asp-controller="Account" asp-action="Logout" method="post" class="d-inline">
-                                        <button type="submit" class="dropdown-item">
-                                            <i class="fas fa-sign-out-alt me-2"></i>Đăng xuất
-                                        </button>
-                                    </form>
-                                </li>
-                            </ul>
-                        </li>
-                    </ul>
+                        <a class="group relative px-2 lg:px-4 py-2.5 lg:py-3 rounded-xl text-white/90 hover:text-white transition-all duration-300 hover:bg-white/10 whitespace-nowrap" asp-controller="Chat" asp-action="Index">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-comments md:text-base lg:text-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0"></i>
+                                <span class="font-medium hidden lg:inline">Chat</span>
+                            </div>
+                            <div class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-blue-400 group-hover:w-full transition-all duration-300 transform -translate-x-1/2"></div>
+                        </a>
+                        
+                        <a class="group relative px-2 lg:px-4 py-2.5 lg:py-3 rounded-xl text-white/90 hover:text-white transition-all duration-300 hover:bg-white/10 whitespace-nowrap" asp-controller="Friend" asp-action="Index">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-users md:text-base lg:text-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0"></i>
+                                <span class="font-medium hidden lg:inline">Bạn bè</span>
+                            </div>
+                            <div class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-blue-400 group-hover:w-full transition-all duration-300 transform -translate-x-1/2"></div>
+                        </a>
+                        
+                        <a class="group relative px-2 lg:px-4 py-2.5 lg:py-3 rounded-xl text-white/90 hover:text-white transition-all duration-300 hover:bg-white/10 whitespace-nowrap" asp-controller="Group" asp-action="Index">
+                            <div class="flex items-center space-x-2">
+                                <i class="fas fa-layer-group md:text-base lg:text-lg group-hover:scale-110 transition-transform duration-300 flex-shrink-0"></i>
+                                <span class="font-medium hidden lg:inline">Nhóm</span>
+                            </div>
+                            <div class="absolute bottom-0 left-1/2 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-blue-400 group-hover:w-full transition-all duration-300 transform -translate-x-1/2"></div>
+                        </a>
+                    </div>
+                    
+                    <!-- Right Side Actions -->
+                    <div class="hidden md:flex items-center space-x-3 lg:space-x-4 shrink-0 justify-self-end z-10">
+                         <!-- Enhanced Search Bar -->
+                        <div class="relative group hidden lg:block" x-data="{ searchOpen: false }">
+                            <div class="flex items-center bg-white/10 backdrop-blur-sm rounded-2xl border border-white/20 hover:border-purple-400/50 transition-all duration-300 focus-within:border-purple-400 focus-within:bg-white/20 w-full max-w-[28vw] lg:max-w-[16rem] xl:max-w-[18rem]">
+                                <span class="pl-4 pr-3 text-white/70 group-hover:text-purple-300 transition-colors duration-300">
+                                    <i class="fas fa-search"></i>
+                                </span>
+                                <input type="text" class="bg-transparent text-white text-xs placeholder-white/50 py-2 pr-3 w-full min-w-0 focus:outline-none focus:placeholder-white/70 transition-all duration-300" placeholder="Tìm kiếm...">
+                                <div class="absolute right-3 top-1/2 transform -translate-y-1/2 hidden 2xl:block">
+                                    <kbd class="px-2 py-0.5 text-[9px] bg-white/10 text-white/50 rounded">⌘K</kbd>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Enhanced Notifications -->
+                        <div class="relative" x-data="{ notificationsOpen: false }">
+                            <button class="group relative p-3 rounded-xl text-white/90 hover:text-white hover:bg-white/10 transition-all duration-300" @@click="notificationsOpen = !notificationsOpen">
+                                <i class="fas fa-bell text-xl group-hover:scale-110 transition-transform duration-300"></i>
+                                <span class="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold shadow-lg animate-pulse" id="notificationBadge" style="display: none;">3</span>
+                            </button>
+                            
+                            <!-- Enhanced Notifications Dropdown -->
+                            <div x-show="notificationsOpen" @@click.away="notificationsOpen = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="absolute right-0 mt-3 w-96 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 z-50 overflow-hidden">
+                                <div class="p-6">
+                                    <div class="flex items-center justify-between mb-4">
+                                        <h3 class="text-gray-900 font-bold text-lg">Thông báo</h3>
+                                        <button class="text-purple-600 hover:text-purple-700 text-sm font-medium">Đánh dấu đã đọc</button>
+                                    </div>
+                                    
+                                    <!-- Notification Items -->
+                                    <div class="space-y-3">
+                                        <div class="flex items-start space-x-3 p-3 rounded-xl hover:bg-gray-50 transition-colors duration-200">
+                                            <div class="w-10 h-10 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-heart text-white text-sm"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-gray-900 text-sm font-medium">Nguyễn Văn A đã thích bài viết của bạn</p>
+                                                <p class="text-gray-500 text-xs mt-1">2 phút trước</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-start space-x-3 p-3 rounded-xl hover:bg-gray-50 transition-colors duration-200">
+                                            <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-user-plus text-white text-sm"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-gray-900 text-sm font-medium">Trần Thị B muốn kết bạn với bạn</p>
+                                                <p class="text-gray-500 text-xs mt-1">5 phút trước</p>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="flex items-start space-x-3 p-3 rounded-xl hover:bg-gray-50 transition-colors duration-200">
+                                            <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-full flex items-center justify-center flex-shrink-0">
+                                                <i class="fas fa-comment text-white text-sm"></i>
+                                            </div>
+                                            <div class="flex-1 min-w-0">
+                                                <p class="text-gray-900 text-sm font-medium">Lê Văn C đã bình luận bài viết của bạn</p>
+                                                <p class="text-gray-500 text-xs mt-1">10 phút trước</p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="mt-4 pt-4 border-t border-gray-200">
+                                        <a href="#" class="block text-center text-purple-600 hover:text-purple-700 font-medium text-sm">Xem tất cả thông báo</a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Enhanced User Menu -->
+                        <div class="relative" x-data="{ userMenuOpen: false }">
+                            <button class="group flex items-center space-x-3 text-white/90 hover:text-white p-3 rounded-xl hover:bg-white/10 transition-all duration-300" @@click="userMenuOpen = !userMenuOpen">
+                                <div class="relative">
+                                    <img id="userAvatar" src="@__avatarUrl" alt="Avatar" class="w-10 h-10 rounded-xl ring-2 ring-white/20 group-hover:ring-purple-400 transition-all duration-300">
+                                    <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-white"></div>
+                                </div>
+                                <span id="userName" class="hidden lg:block font-medium">@User.Identity.Name</span>
+                                <i class="fas fa-chevron-down text-sm group-hover:rotate-180 transition-transform duration-300"></i>
+                            </button>
+                            
+                            <!-- Enhanced User Dropdown -->
+                            <div x-show="userMenuOpen" @@click.away="userMenuOpen = false" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 scale-95" x-transition:enter-end="opacity-100 scale-100" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 scale-100" x-transition:leave-end="opacity-0 scale-95" class="absolute right-0 mt-3 w-56 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20 z-50 overflow-hidden">
+                                <div class="p-4">
+                                    <!-- User Info Header -->
+                                    <div class="flex items-center space-x-3 p-3 bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl mb-3">
+                                        <img id="userAvatar" src="@__avatarUrl" alt="Avatar" class="w-12 h-12 rounded-xl">
+                                        <div class="flex-1 min-w-0">
+                                            <p class="text-gray-900 font-semibold text-sm">@User.Identity.Name</p>
+                                            <p class="text-gray-500 text-xs">Trực tuyến</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- Menu Items -->
+                                    <div class="space-y-1">
+                                        <a class="flex items-center px-3 py-2.5 text-gray-700 hover:text-purple-600 hover:bg-purple-50 rounded-xl transition-all duration-200 group" asp-controller="Profile" asp-action="Index">
+                                            <i class="fas fa-user mr-3 text-purple-500 group-hover:scale-110 transition-transform duration-200"></i>
+                                            <span class="font-medium">Hồ sơ cá nhân</span>
+                                        </a>
+                                        <a class="flex items-center px-3 py-2.5 text-gray-700 hover:text-green-600 hover:bg-green-50 rounded-xl transition-all duration-200 group" asp-controller="Profile" asp-action="Edit">
+                                            <i class="fas fa-edit mr-3 text-green-500 group-hover:scale-110 transition-transform duration-200"></i>
+                                            <span class="font-medium">Chỉnh sửa hồ sơ</span>
+                                        </a>
+                                        <a class="flex items-center px-3 py-2.5 text-gray-700 hover:text-yellow-600 hover:bg-yellow-50 rounded-xl transition-all duration-200 group" asp-controller="Profile" asp-action="ChangePassword">
+                                            <i class="fas fa-key mr-3 text-yellow-500 group-hover:scale-110 transition-transform duration-200"></i>
+                                            <span class="font-medium">Đổi mật khẩu</span>
+                                        </a>
+                                        
+                                        <hr class="border-gray-200 my-2">
+                                        
+                                        <form asp-controller="Account" asp-action="Logout" method="post">
+                                            <button type="submit" class="w-full text-left flex items-center px-3 py-2.5 text-red-600 hover:text-red-700 hover:bg-red-50 rounded-xl transition-all duration-200 group">
+                                                <i class="fas fa-sign-out-alt mr-3 group-hover:scale-110 transition-transform duration-200"></i>
+                                                <span class="font-medium">Đăng xuất</span>
+                </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
+                
+                                    <!-- Enhanced Mobile Navigation -->
+                    <div x-show="$store.mobileMenu.open" x-transition:enter="transition ease-out duration-200" x-transition:enter-start="opacity-0 -translate-y-4" x-transition:enter-end="opacity-100 translate-y-0" x-transition:leave="transition ease-in duration-150" x-transition:leave-start="opacity-100 translate-y-0" x-transition:leave-end="opacity-0 -translate-y-4" class="md:hidden">
+                        <div class="px-4 pt-4 pb-6 space-y-2 bg-white/10 backdrop-blur-sm rounded-2xl mt-4 border border-white/20">
+                            <a class="flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group whitespace-nowrap" asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-home mr-3 text-lg group-hover:scale-110 transition-transform duration-200 flex-shrink-0"></i>
+                                <span class="font-medium">Trang chủ</span>
+                            </a>
+                            <a class="flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group whitespace-nowrap" asp-controller="Chat" asp-action="Index">
+                                <i class="fas fa-comments mr-3 text-lg group-hover:scale-110 transition-transform duration-200 flex-shrink-0"></i>
+                                <span class="font-medium">Chat</span>
+                            </a>
+                            <a class="flex items-center px-4 py-3 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group whitespace-nowrap" asp-controller="Friend" asp-action="Index">
+                                <i class="fas fa-users mr-3 text-lg group-hover:scale-110 transition-transform duration-200 flex-shrink-0"></i>
+                                <span class="font-medium">Bạn bè</span>
+                            </a>
+                            <a class="flex items-center px-4 py-2 text-white/90 hover:text-white hover:bg-white/10 rounded-xl transition-all duration-200 group whitespace-nowrap" asp-controller="Group" asp-action="Index">
+                                <i class="fas fa-layer-group mr-3 text-lg group-hover:scale-110 transition-transform duration-200 flex-shrink-0"></i>
+                                <span class="font-medium">Nhóm</span>
+                            </a>
+                        </div>
+                    </div>
             </div>
         </nav>
     }
     else
     {
-        <!-- Navigation cho người dùng chưa đăng nhập -->
-        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-            <div class="container-fluid">
-                <a class="navbar-brand d-flex align-items-center" asp-controller="Home" asp-action="Index">
-                    <img src="~/img/logo.jpg" alt="OkeanBook" width="32" height="32" class="me-2 rounded-circle">
-                    OkeanBook
-                </a>
-                
-                <div class="navbar-nav ms-auto">
-                    <a class="nav-link" asp-controller="Account" asp-action="Login">
-                        <i class="fas fa-sign-in-alt me-1"></i>Đăng nhập
+        <!-- Tailwind CSS Navigation cho người dùng chưa đăng nhập -->
+        <nav class="bg-gradient-to-r from-blue-600 to-purple-600 shadow-lg">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div class="flex justify-between items-center h-16">
+                    <a class="flex items-center space-x-3 text-white font-bold text-xl shrink-0" asp-controller="Home" asp-action="Index">
+                        <img src="/css/img/logo.jpg" alt="OkeanBook" loading="eager" class="block w-10 h-10 object-contain rounded-full shadow-md relative z-10 select-none shrink-0" />
+                        <span>OkeanBook</span>
                     </a>
-                    <a class="nav-link" asp-controller="Account" asp-action="Register">
-                        <i class="fas fa-user-plus me-1"></i>Đăng ký
-                    </a>
+                    
+                    <div class="flex items-center space-x-4">
+                        <a class="text-white border border-white hover:bg-white hover:text-blue-600 px-6 py-2 rounded-full text-sm font-medium transition-colors" asp-controller="Account" asp-action="Login">
+                            <i class="fas fa-sign-in-alt mr-2"></i>Đăng nhập
+                        </a>
+                        <a class="bg-white text-blue-600 hover:bg-gray-100 px-6 py-2 rounded-full text-sm font-medium transition-colors" asp-controller="Account" asp-action="Register">
+                            <i class="fas fa-user-plus mr-2"></i>Đăng ký
+                        </a>
+                    </div>
                 </div>
             </div>
         </nav>
     }
 
-    <div class="container-fluid">
-        <main role="main" class="pb-3">
+    <div class="min-h-screen bg-gray-900">
+        <main role="main" class="pb-0">
             @if (TempData["Success"] != null)
             {
-                <div class="alert alert-success alert-dismissible fade show" role="alert">
-                    @TempData["Success"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" x-data="{ show: true }" x-show="show">
+                    <div class="bg-green-600 border border-green-500 text-white px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline">@TempData["Success"]</span>
+                        <button type="button" class="absolute top-0 bottom-0 right-0 px-4 py-3" @@click="show = false">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
             }
             
             @if (TempData["Error"] != null)
             {
-                <div class="alert alert-danger alert-dismissible fade show" role="alert">
-                    @TempData["Error"]
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-4" x-data="{ show: true }" x-show="show">
+                    <div class="bg-red-600 border border-red-500 text-white px-4 py-3 rounded relative" role="alert">
+                        <span class="block sm:inline">@TempData["Error"]</span>
+                        <button type="button" class="absolute top-0 bottom-0 right-0 px-4 py-4" @@click="show = false">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
                 </div>
             }
             
@@ -133,14 +283,219 @@
         </main>
     </div>
 
-    <footer class="border-top footer text-muted mt-5">
-        <div class="container text-center py-3">
-            &copy; 2025 - OkeanBook - Mạng xã hội thời gian thực
+    <!-- Enhanced Modern Footer -->
+    <footer class="relative bg-gradient-to-br from-slate-900 via-purple-900/50 to-slate-900 text-white py-16 mt-0 overflow-hidden">
+        <!-- Background Elements -->
+        <div class="absolute inset-0 overflow-hidden">
+            <div class="absolute top-0 left-1/4 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+            <div class="absolute bottom-0 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl"></div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <!-- Main Footer Content -->
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12 mb-12">
+                <!-- Company Info -->
+                <div class="space-y-6">
+                    <div class="flex items-center space-x-4">
+                        <div class="relative">
+                            <img src="~/img/logo.jpg" alt="OkeanBook" class="w-14 h-14 rounded-2xl ring-2 ring-purple-500/30 shadow-lg">
+                            <div class="absolute inset-0 rounded-2xl bg-gradient-to-r from-purple-500/20 to-blue-500/20 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                        </div>
+                        <div>
+                            <h3 class="text-2xl font-bold bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">OkeanBook</h3>
+                            <p class="text-purple-300 text-sm font-medium">Kết nối thế giới</p>
+                        </div>
+                    </div>
+                    <p class="text-gray-300 text-sm leading-relaxed">
+                        Nền tảng mạng xã hội hàng đầu Việt Nam, nơi kết nối bạn bè, chia sẻ khoảnh khắc và xây dựng cộng đồng trực tuyến an toàn, thân thiện.
+                    </p>
+                    
+                    <!-- Social Media Links -->
+                    <div class="flex space-x-4">
+                        <a href="#" class="group w-12 h-12 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 rounded-2xl flex items-center justify-center text-white transition-all duration-300 hover:scale-110 transform shadow-lg hover:shadow-blue-500/25">
+                            <i class="fab fa-facebook text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                        </a>
+                        <a href="#" class="group w-12 h-12 bg-gradient-to-r from-sky-500 to-sky-600 hover:from-sky-600 hover:to-sky-700 rounded-2xl flex items-center justify-center text-white transition-all duration-300 hover:scale-110 transform shadow-lg hover:shadow-sky-500/25">
+                            <i class="fab fa-twitter text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                        </a>
+                        <a href="#" class="group w-12 h-12 bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-600 hover:to-purple-700 rounded-2xl flex items-center justify-center text-white transition-all duration-300 hover:scale-110 transform shadow-lg hover:shadow-purple-500/25">
+                            <i class="fab fa-instagram text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                        </a>
+                        <a href="#" class="group w-12 h-12 bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700 rounded-2xl flex items-center justify-center text-white transition-all duration-300 hover:scale-110 transform shadow-lg hover:shadow-red-500/25">
+                            <i class="fab fa-youtube text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                        </a>
+                    </div>
+                </div>
+                
+                <!-- Quick Links -->
+                <div class="space-y-6">
+                    <h4 class="text-xl font-bold text-white flex items-center">
+                        <i class="fas fa-rocket text-purple-400 mr-3"></i>
+                        Liên kết nhanh
+                    </h4>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="#" class="group flex items-center text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-2">
+                                <i class="fas fa-chevron-right text-purple-400 mr-3 text-xs group-hover:scale-110 transition-transform duration-200"></i>
+                                <span>Trang chủ</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="group flex items-center text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-2">
+                                <i class="fas fa-chevron-right text-purple-400 mr-3 text-xs group-hover:scale-110 transition-transform duration-200"></i>
+                                <span>Về chúng tôi</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="group flex items-center text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-2">
+                                <i class="fas fa-chevron-right text-purple-400 mr-3 text-xs group-hover:scale-110 transition-transform duration-200"></i>
+                                <span>Dịch vụ</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="group flex items-center text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-2">
+                                <i class="fas fa-chevron-right text-purple-400 mr-3 text-xs group-hover:scale-110 transition-transform duration-200"></i>
+                                <span>Liên hệ</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="group flex items-center text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-2">
+                                <i class="fas fa-chevron-right text-purple-400 mr-3 text-xs group-hover:scale-110 transition-transform duration-200"></i>
+                                <span>Blog</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Support -->
+                <div class="space-y-6">
+                    <h4 class="text-xl font-bold text-white flex items-center">
+                        <i class="fas fa-headset text-blue-400 mr-3"></i>
+                        Hỗ trợ
+                    </h4>
+                    <ul class="space-y-3">
+                        <li>
+                            <a href="#" class="group flex items-center text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-2">
+                                <i class="fas fa-chevron-right text-blue-400 mr-3 text-xs group-hover:scale-110 transition-transform duration-200"></i>
+                                <span>Trung tâm trợ giúp</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="group flex items-center text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-2">
+                                <i class="fas fa-chevron-right text-blue-400 mr-3 text-xs group-hover:scale-110 transition-transform duration-200"></i>
+                                <span>Báo cáo vấn đề</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="group flex items-center text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-2">
+                                <i class="fas fa-chevron-right text-blue-400 mr-3 text-xs group-hover:scale-110 transition-transform duration-200"></i>
+                                <span>Hướng dẫn sử dụng</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="group flex items-center text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-2">
+                                <i class="fas fa-chevron-right text-blue-400 mr-3 text-xs group-hover:scale-110 transition-transform duration-200"></i>
+                                <span>FAQ</span>
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#" class="group flex items-center text-gray-300 hover:text-white transition-all duration-300 hover:translate-x-2">
+                                <i class="fas fa-chevron-right text-blue-400 mr-3 text-xs group-hover:scale-110 transition-transform duration-200"></i>
+                                <span>Phản hồi</span>
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                
+                <!-- Contact Info -->
+                <div class="space-y-6">
+                    <h4 class="text-xl font-bold text-white flex items-center">
+                        <i class="fas fa-address-card text-green-400 mr-3"></i>
+                        Liên hệ
+                    </h4>
+                    <div class="space-y-4">
+                        <div class="group flex items-start space-x-3 p-3 bg-white/5 backdrop-blur-sm rounded-xl hover:bg-white/10 transition-all duration-300">
+                            <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-map-marker-alt text-white text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-white font-medium text-sm">Địa chỉ</p>
+                                <p class="text-gray-300 text-xs">123 Đường ABC, Quận 1, TP.HCM</p>
+                            </div>
+                        </div>
+                        
+                        <div class="group flex items-start space-x-3 p-3 bg-white/5 backdrop-blur-sm rounded-xl hover:bg-white/10 transition-all duration-300">
+                            <div class="w-10 h-10 bg-gradient-to-r from-green-500 to-emerald-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-phone text-white text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-white font-medium text-sm">Điện thoại</p>
+                                <p class="text-gray-300 text-xs">+84 123 456 789</p>
+                            </div>
+                        </div>
+                        
+                        <div class="group flex items-start space-x-3 p-3 bg-white/5 backdrop-blur-sm rounded-xl hover:bg-white/10 transition-all duration-300">
+                            <div class="w-10 h-10 bg-gradient-to-r from-yellow-500 to-orange-500 rounded-xl flex items-center justify-center flex-shrink-0">
+                                <i class="fas fa-envelope text-white text-sm"></i>
+                            </div>
+                            <div>
+                                <p class="text-white font-medium text-sm">Email</p>
+                                <p class="text-gray-300 text-xs">info@okeanbook.com</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Newsletter Subscription -->
+            <div class="bg-gradient-to-r from-purple-500/10 to-blue-500/10 backdrop-blur-sm rounded-3xl border border-purple-500/20 p-8 mb-12">
+                <div class="text-center max-w-2xl mx-auto">
+                    <h3 class="text-2xl font-bold text-white mb-3">Đăng ký nhận tin tức</h3>
+                    <p class="text-gray-300 mb-6">Nhận thông tin mới nhất về tính năng và cập nhật từ OkeanBook</p>
+                    <div class="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+                        <input type="email" placeholder="Nhập email của bạn" class="flex-1 px-6 py-3 bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400/50 transition-all duration-300">
+                        <button class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-purple-500/25">
+                            <i class="fas fa-paper-plane mr-2"></i>Đăng ký
+                        </button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bottom Bar -->
+            <div class="border-t border-white/20 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center space-y-4 md:space-y-0">
+                    <div class="flex items-center space-x-2">
+                        <i class="fas fa-heart text-red-400"></i>
+                        <p class="text-gray-300 text-sm">
+                            © 2024 OkeanBook. Được tạo với <span class="text-purple-400 font-medium">tình yêu</span> tại Việt Nam.
+                        </p>
+                    </div>
+                    <div class="flex flex-wrap justify-center gap-6">
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline">Chính sách bảo mật</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline">Điều khoản sử dụng</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline">Cookie Policy</a>
+                        <a href="#" class="text-gray-400 hover:text-white text-sm transition-colors duration-300 hover:underline">Sitemap</a>
+                    </div>
+                </div>
+            </div>
         </div>
     </footer>
     
-    <script src="~/lib/jquery/dist/jquery.min.js"></script>
-    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Alpine.js -->
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    <script>
+        document.addEventListener('alpine:init', () => {
+            Alpine.store('mobileMenu', {
+                open: false,
+                toggle() {
+                    this.open = !this.open
+                }
+            })
+        })
+    </script>
+    <!-- SignalR -->
+    <script src="https://unpkg.com/@@microsoft/signalr@latest/dist/browser/signalr.min.js"></script>
+    <!-- Custom JS -->
     <script src="~/js/site.js" asp-append-version="true"></script>
     @await RenderSectionAsync("Scripts", required: false)
 </body>

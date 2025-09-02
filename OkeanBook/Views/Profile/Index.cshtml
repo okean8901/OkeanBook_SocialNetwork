@@ -1,230 +1,308 @@
 @model OkeanBook.Models.ViewModels.ProfileViewModel
-
 @{
-    ViewData["Title"] = "Hồ sơ";
+    ViewData["Title"] = "Hồ sơ cá nhân - OkeanBook";
 }
 
-<div class="row">
-    <div class="col-md-4">
-        <!-- Thông tin cá nhân -->
-        <div class="card mb-3">
-            <div class="card-body text-center">
-                <img src="@(Model.Avatar ?? "/img/default-avatar.png")" 
-                     class="rounded-circle mb-3" width="120" height="120" alt="Avatar">
-                <h4>@Model.UserName</h4>
-                <p class="text-muted">@Model.Email</p>
-                
-                @if (!string.IsNullOrEmpty(Model.Bio))
-                {
-                    <p class="card-text">@Model.Bio</p>
-                }
-                
-                <div class="d-flex justify-content-center mb-3">
-                    <span class="badge bg-primary me-2">
-                        <i class="fas fa-calendar me-1"></i>
-                        Tham gia: @Model.CreatedAt.ToString("MM/yyyy")
-                    </span>
-                    <span class="badge bg-success">
-                        <i class="fas fa-circle me-1"></i>
-                        @Model.Status.ToString()
-                    </span>
-                </div>
-
-                @if (ViewBag.IsOwnProfile)
-                {
-                    <div class="d-grid gap-2">
-                        <a asp-action="Edit" class="btn btn-primary">
-                            <i class="fas fa-edit me-1"></i>Chỉnh sửa hồ sơ
-                        </a>
-                        <a asp-action="ChangePassword" class="btn btn-outline-secondary">
-                            <i class="fas fa-key me-1"></i>Đổi mật khẩu
-                        </a>
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 py-8">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <!-- Profile Header -->
+        <div class="mb-8">
+            <div class="bg-white/10 backdrop-blur-xl rounded-3xl overflow-hidden border border-white/20 shadow-2xl">
+                <!-- Cover Photo -->
+                <div class="relative h-64 bg-gradient-to-r from-purple-600 to-blue-600">
+                    <div class="absolute top-4 right-4 flex space-x-2">
+                        <button class="bg-white/90 hover:bg-white text-gray-800 px-4 py-2 rounded-2xl text-sm font-semibold transition-all shadow-lg" data-bs-toggle="modal" data-bs-target="#coverPhotoModal">
+                            <i class="fas fa-camera mr-2"></i>Thay đổi ảnh bìa
+                        </button>
                     </div>
-                }
-                else
-                {
-                    <div class="d-grid gap-2">
-                        @if (ViewBag.FriendStatus == null)
-                        {
-                            <button class="btn btn-primary" onclick="sendFriendRequest('@Model.Id')">
-                                <i class="fas fa-user-plus me-1"></i>Kết bạn
-                            </button>
-                        }
-                        else if (ViewBag.FriendStatus.ToString() == "Pending")
-                        {
-                            <button class="btn btn-warning" disabled>
-                                <i class="fas fa-clock me-1"></i>Đã gửi lời mời
-                            </button>
-                        }
-                        else if (ViewBag.FriendStatus.ToString() == "Accepted")
-                        {
-                            <div class="btn-group" role="group">
-                                <a asp-controller="Chat" asp-action="Index" asp-route-chatId="@Model.Id" 
-                                   class="btn btn-success">
-                                    <i class="fas fa-comment me-1"></i>Nhắn tin
-                                </a>
-                                <button class="btn btn-outline-danger" onclick="removeFriend('@Model.Id')">
-                                    <i class="fas fa-user-times me-1"></i>Xóa bạn
+                </div>
+                
+                <!-- Profile Info -->
+                <div class="p-8">
+                    <div class="flex flex-col md:flex-row">
+                        <div class="md:w-1/3 text-center mb-6 md:mb-0">
+                            <div class="relative inline-block -mt-20">
+                                <img src="@(Model?.Avatar ?? "~/img/default-avatar.png")" alt="Avatar" class="w-36 h-36 rounded-2xl ring-4 ring-white/50 shadow-2xl object-cover">
+                                <button class="absolute -bottom-2 -right-2 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white w-10 h-10 rounded-xl transition-all shadow-lg" data-bs-toggle="modal" data-bs-target="#avatarModal">
+                                    <i class="fas fa-camera"></i>
                                 </button>
                             </div>
-                        }
-                        else if (ViewBag.FriendStatus.ToString() == "Blocked")
-                        {
-                            <button class="btn btn-outline-danger" onclick="unblockUser('@Model.Id')">
-                                <i class="fas fa-unlock me-1"></i>Bỏ chặn
-                            </button>
-                        }
+                        </div>
+                        <div class="md:w-2/3 md:pl-8">
+                            <div class="flex flex-col md:flex-row md:items-start md:justify-between">
+                                <div class="mb-6 md:mb-0">
+                                    <h2 class="text-white text-3xl font-extrabold mb-2">@(Model?.UserName ?? User.Identity?.Name ?? "Người dùng")</h2>
+                                    <p class="text-white/70 text-lg mb-4">@(Model?.Bio ?? "Chưa có thông tin giới thiệu")</p>
+                                    <div class="flex flex-wrap items-center text-white/70 gap-x-6 gap-y-2">
+                                        <div class="flex items-center">
+                                            <i class="fas fa-map-marker-alt mr-2 text-purple-300"></i>
+                                            <span>Việt Nam</span>
+                                        </div>
+                                        <div class="flex items-center">
+                                            <i class="fas fa-calendar-alt mr-2 text-purple-300"></i>
+                                            <span>Tham gia @(Model.CreatedAt.ToString("MMMM yyyy"))</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex space-x-3">
+                                    <a asp-controller="Profile" asp-action="Edit" class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-3 rounded-2xl font-semibold transition-all shadow-lg hover:scale-105 flex items-center">
+                                        <i class="fas fa-edit mr-2"></i>Chỉnh sửa hồ sơ
+                                    </a>
+                                    <button class="bg-white/10 hover:bg-white/20 text-white px-6 py-3 rounded-2xl font-semibold transition-all border border-white/20 flex items-center">
+                                        <i class="fas fa-share mr-2"></i>Chia sẻ
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                }
+                </div>
             </div>
         </div>
 
-        <!-- Thống kê -->
-        <div class="card">
-            <div class="card-header">
-                <h6 class="mb-0">Thống kê</h6>
+        <!-- Main Content -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Left: About + Posts -->
+            <div class="lg:col-span-2 space-y-6">
+                <!-- About Section -->
+                <div class="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl">
+                    <div class="flex items-center justify-between p-6 border-b border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+                        <h5 class="text-white font-bold flex items-center">
+                            <i class="fas fa-info-circle text-purple-300 mr-3"></i>
+                            Giới thiệu
+                        </h5>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="flex items-start p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <i class="fas fa-birthday-cake text-white/60 mr-4 mt-1"></i>
+                                <div>
+                                    <p class="text-white/50 text-xs">Ngày sinh</p>
+                                    <p class="text-white/90">Chưa cập nhật</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <i class="fas fa-graduation-cap text-white/60 mr-4 mt-1"></i>
+                                <div>
+                                    <p class="text-white/50 text-xs">Học vấn</p>
+                                    <p class="text-white/90">Chưa cập nhật</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <i class="fas fa-briefcase text-white/60 mr-4 mt-1"></i>
+                                <div>
+                                    <p class="text-white/50 text-xs">Công việc</p>
+                                    <p class="text-white/90">Chưa cập nhật</p>
+                                </div>
+                            </div>
+                            <div class="flex items-start p-4 rounded-2xl bg-white/5 border border-white/10">
+                                <i class="fas fa-heart text-white/60 mr-4 mt-1"></i>
+                                <div>
+                                    <p class="text-white/50 text-xs">Tình trạng</p>
+                                    <p class="text-white/90">Chưa cập nhật</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Posts Section -->
+                <div class="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl">
+                    <div class="flex items-center justify-between p-6 border-b border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+                        <h5 class="text-white font-bold flex items-center">
+                            <i class="fas fa-newspaper text-purple-300 mr-3"></i>
+                            Bài viết
+                        </h5>
+                        <div class="flex space-x-2">
+                            <button class="px-4 py-2 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 text-white text-sm">Tất cả</button>
+                            <button class="px-4 py-2 rounded-2xl bg-white/10 border border-white/10 text-white/80 hover:text-white hover:bg-white/20 text-sm">Ảnh</button>
+                            <button class="px-4 py-2 rounded-2xl bg-white/10 border border-white/10 text-white/80 hover:text-white hover:bg-white/20 text-sm">Video</button>
+                        </div>
+                    </div>
+                    <div class="p-6 space-y-6">
+                        <!-- Post 1 -->
+                        <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                            <div class="flex items-center mb-4">
+                                <img src="@(Model?.Avatar ?? "~/img/default-avatar.png")" alt="Avatar" class="w-12 h-12 rounded-xl ring-2 ring-white/20 mr-3">
+                                <div class="flex-1 min-w-0">
+                                    <h6 class="text-white font-semibold truncate">@(Model?.UserName ?? User.Identity?.Name ?? "Người dùng")</h6>
+                                    <p class="text-white/50 text-xs">2 giờ trước</p>
+                                </div>
+                                <button class="text-white/50 hover:text-white"><i class="fas fa-ellipsis-h"></i></button>
+                            </div>
+                            <p class="text-white/90 mb-3">Đây là một bài viết mẫu để hiển thị giao diện profile. Bạn có thể thêm nhiều bài viết khác nhau ở đây.</p>
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-white/70">
+                                    <button class="like-btn mr-4 hover:text-red-400 transition-colors"><i class="far fa-heart mr-2"></i>5</button>
+                                    <button class="hover:text-white"><i class="fas fa-comment mr-2"></i>2</button>
+                                </div>
+                                <button class="text-white/70 hover:text-white"><i class="fas fa-share mr-2"></i>Chia sẻ</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Post 2 -->
+                        <div class="bg-white/5 border border-white/10 rounded-2xl p-5">
+                            <div class="flex items-center mb-4">
+                                <img src="@(Model?.Avatar ?? "~/img/default-avatar.png")" alt="Avatar" class="w-12 h-12 rounded-xl ring-2 ring-white/20 mr-3">
+                                <div class="flex-1 min-w-0">
+                                    <h6 class="text-white font-semibold truncate">@(Model?.UserName ?? User.Identity?.Name ?? "Người dùng")</h6>
+                                    <p class="text-white/50 text-xs">1 ngày trước</p>
+                                </div>
+                                <button class="text-white/50 hover:text-white"><i class="fas fa-ellipsis-h"></i></button>
+                            </div>
+                            <p class="text-white/90 mb-3">Chia sẻ một khoảnh khắc đẹp trong ngày!</p>
+                            <img src="~/img/default-avatar.png" alt="Post Image" class="w-full rounded-2xl mb-3 object-cover">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center text-white/70">
+                                    <button class="like-btn mr-4 hover:text-red-400 transition-colors"><i class="far fa-heart mr-2"></i>12</button>
+                                    <button class="hover:text-white"><i class="fas fa-comment mr-2"></i>8</button>
+                                </div>
+                                <button class="text-white/70 hover:text-white"><i class="fas fa-share mr-2"></i>Chia sẻ</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="card-body">
-                <div class="row text-center">
-                    <div class="col-4">
-                        <h5 class="text-primary" id="postCount">0</h5>
-                        <small class="text-muted">Bài viết</small>
+
+            <!-- Right: Friends / Photos / Groups -->
+            <div class="space-y-6">
+                <!-- Friends -->
+                <div class="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl">
+                    <div class="flex items-center justify-between p-6 border-b border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+                        <h5 class="text-white font-bold flex items-center">
+                            <i class="fas fa-users text-purple-300 mr-3"></i>
+                            Bạn bè
+                        </h5>
+                        <a href="/Friend" class="text-white/70 hover:text-white text-sm">Xem tất cả</a>
                     </div>
-                    <div class="col-4">
-                        <h5 class="text-success" id="friendCount">0</h5>
-                        <small class="text-muted">Bạn bè</small>
+                    <div class="p-6">
+                        <div class="grid grid-cols-2 gap-4">
+                            <div class="text-center">
+                                <img src="~/img/default-avatar.png" alt="Friend" class="w-16 h-16 rounded-xl ring-2 ring-white/20 mx-auto mb-2 object-cover">
+                                <p class="text-white/80 text-sm">Nguyễn Văn A</p>
+                            </div>
+                            <div class="text-center">
+                                <img src="~/img/default-avatar.png" alt="Friend" class="w-16 h-16 rounded-xl ring-2 ring-white/20 mx-auto mb-2 object-cover">
+                                <p class="text-white/80 text-sm">Trần Thị B</p>
+                            </div>
+                            <div class="text-center">
+                                <img src="~/img/default-avatar.png" alt="Friend" class="w-16 h-16 rounded-xl ring-2 ring-white/20 mx-auto mb-2 object-cover">
+                                <p class="text-white/80 text-sm">Lê Văn C</p>
+                            </div>
+                            <div class="text-center">
+                                <img src="~/img/default-avatar.png" alt="Friend" class="w-16 h-16 rounded-xl ring-2 ring-white/20 mx-auto mb-2 object-cover">
+                                <p class="text-white/80 text-sm">Phạm Thị D</p>
+                            </div>
+                        </div>
                     </div>
-                    <div class="col-4">
-                        <h5 class="text-warning" id="commentCount">0</h5>
-                        <small class="text-muted">Bình luận</small>
+                </div>
+
+                <!-- Photos -->
+                <div class="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl">
+                    <div class="flex items-center justify-between p-6 border-b border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+                        <h5 class="text-white font-bold flex items-center">
+                            <i class="fas fa-images text-purple-300 mr-3"></i>
+                            Ảnh
+                        </h5>
+                        <a href="#" class="text-white/70 hover:text-white text-sm">Xem tất cả</a>
+                    </div>
+                    <div class="p-6">
+                        <div class="grid grid-cols-3 gap-2">
+                            <img src="~/img/default-avatar.png" alt="Photo" class="w-full h-24 object-cover rounded-xl">
+                            <img src="~/img/default-avatar.png" alt="Photo" class="w-full h-24 object-cover rounded-xl">
+                            <img src="~/img/default-avatar.png" alt="Photo" class="w-full h-24 object-cover rounded-xl">
+                            <img src="~/img/default-avatar.png" alt="Photo" class="w-full h-24 object-cover rounded-xl">
+                            <img src="~/img/default-avatar.png" alt="Photo" class="w-full h-24 object-cover rounded-xl">
+                            <img src="~/img/default-avatar.png" alt="Photo" class="w-full h-24 object-cover rounded-xl">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Groups -->
+                <div class="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl">
+                    <div class="flex items-center justify-between p-6 border-b border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+                        <h5 class="text-white font-bold flex items-center">
+                            <i class="fas fa-layer-group text-purple-300 mr-3"></i>
+                            Nhóm
+                        </h5>
+                        <a href="/Group" class="text-white/70 hover:text-white text-sm">Xem tất cả</a>
+                    </div>
+                    <div class="p-6 space-y-3">
+                        <a href="#" class="flex items-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+                            <img src="~/img/default-group.png" alt="Group" class="w-10 h-10 rounded-xl ring-2 ring-white/20 mr-3">
+                            <div>
+                                <p class="text-white font-medium">Nhóm học tập</p>
+                                <p class="text-white/60 text-xs">15 thành viên</p>
+                            </div>
+                        </a>
+                        <a href="#" class="flex items-center p-3 rounded-2xl bg-white/5 border border-white/10 hover:bg-white/10 transition-all">
+                            <img src="~/img/default-group.png" alt="Group" class="w-10 h-10 rounded-xl ring-2 ring-white/20 mr-3">
+                            <div>
+                                <p class="text-white font-medium">Nhóm công việc</p>
+                                <p class="text-white/60 text-xs">8 thành viên</p>
+                            </div>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="col-md-8">
-        <!-- Bài viết -->
-        <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h5 class="mb-0">Bài viết</h5>
-                @if (ViewBag.IsOwnProfile)
-                {
-                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-sm">
-                        <i class="fas fa-plus me-1"></i>Tạo bài viết
-                    </a>
-                }
+<!-- Avatar Modal -->
+<div class="modal fade" id="avatarModal" tabindex="-1" aria-labelledby="avatarModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="avatarModalLabel">
+                    <i class="fas fa-camera text-primary me-2"></i>
+                    Thay đổi ảnh đại diện
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <div class="card-body">
-                <div id="postsList">
-                    @if (ViewBag.Posts != null && ((IEnumerable<OkeanBook.Models.ViewModels.PostViewModel>)ViewBag.Posts).Any())
-                    {
-                        @foreach (var post in (IEnumerable<OkeanBook.Models.ViewModels.PostViewModel>)ViewBag.Posts)
-                        {
-                            <div class="card mb-3 post-item" data-post-id="@post.Id">
-                                <div class="card-body">
-                                    <!-- Header bài viết -->
-                                    <div class="d-flex align-items-center mb-3">
-                                        <img src="@(post.UserAvatar ?? "/img/default-avatar.png")" 
-                                             alt="Avatar" class="rounded-circle me-2" width="40" height="40">
-                                        <div>
-                                            <h6 class="mb-0">@post.UserName</h6>
-                                            <small class="text-muted">@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
-                                        </div>
-                                    </div>
+            <div class="modal-body">
+                <form asp-controller="Profile" asp-action="UpdateAvatar" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="avatarFile" class="form-label">Chọn ảnh đại diện</label>
+                        <input type="file" class="form-control" id="avatarFile" name="avatarFile" accept="image/*">
+                    </div>
+                    <div class="text-center">
+                        <img id="avatarPreview" src="@(Model?.Avatar ?? "~/img/default-avatar.png")" alt="Avatar Preview" class="rounded-2xl" width="150" height="150">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary">Lưu thay đổi</button>
+            </div>
+        </div>
+    </div>
+</div>
 
-                                    <!-- Nội dung bài viết -->
-                                    <p class="card-text">@post.Content</p>
-
-                                    <!-- Media -->
-                                    @if (!string.IsNullOrEmpty(post.MediaUrl))
-                                    {
-                                        <div class="mb-3">
-                                            @if (post.Type == OkeanBook.Models.PostType.Image)
-                                            {
-                                                <img src="@post.MediaUrl" class="img-fluid rounded" alt="Post image">
-                                            }
-                                            else if (post.Type == OkeanBook.Models.PostType.Video)
-                                            {
-                                                <video src="@post.MediaUrl" class="img-fluid rounded" controls></video>
-                                            }
-                                        </div>
-                                    }
-
-                                    <!-- Actions -->
-                                    <div class="d-flex justify-content-between align-items-center">
-                                        <div class="btn-group" role="group">
-                                            <button type="button" class="btn btn-outline-primary btn-sm like-btn" data-post-id="@post.Id">
-                                                <i class="fas fa-heart @(post.IsLiked ? "text-danger" : "")"></i>
-                                                <span class="like-count">@post.LikeCount</span>
-                                            </button>
-                                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#comments-@post.Id">
-                                                <i class="fas fa-comment"></i>
-                                                <span>@post.CommentCount</span>
-                                            </button>
-                                            <button type="button" class="btn btn-outline-primary btn-sm">
-                                                <i class="fas fa-share"></i>
-                                                <span>@post.ShareCount</span>
-                                            </button>
-                                        </div>
-                                    </div>
-
-                                    <!-- Form bình luận -->
-                                    <div class="collapse mt-3" id="comments-@post.Id">
-                                        <form asp-controller="Home" asp-action="CreateComment" method="post" class="comment-form" data-post-id="@post.Id">
-                                            <input type="hidden" name="PostId" value="@post.Id">
-                                            <div class="input-group">
-                                                <input type="text" name="Content" class="form-control" placeholder="Viết bình luận..." required>
-                                                <button type="submit" class="btn btn-primary">
-                                                    <i class="fas fa-paper-plane"></i>
-                                                </button>
-                                            </div>
-                                        </form>
-
-                                        <!-- Danh sách bình luận -->
-                                        <div class="mt-3" id="comments-list-@post.Id">
-                                            @if (post.Comments != null && post.Comments.Any())
-                                            {
-                                                @foreach (var comment in post.Comments.Take(3))
-                                                {
-                                                    <div class="d-flex align-items-start mb-2">
-                                                        <img src="@(comment.UserAvatar ?? "/img/default-avatar.png")" 
-                                                             alt="Avatar" class="rounded-circle me-2" width="32" height="32">
-                                                        <div class="flex-grow-1">
-                                                            <div class="bg-light rounded p-2">
-                                                                <strong>@comment.UserName</strong>
-                                                                <p class="mb-1">@comment.Content</p>
-                                                                <small class="text-muted">@comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                }
-                                            }
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        }
-                    }
-                    else
-                    {
-                        <div class="text-center py-5">
-                            <i class="fas fa-newspaper text-muted" style="font-size: 3rem;"></i>
-                            <h5 class="mt-3 text-muted">Chưa có bài viết nào</h5>
-                            @if (ViewBag.IsOwnProfile)
-                            {
-                                <p class="text-muted">Hãy tạo bài viết đầu tiên của bạn!</p>
-                                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
-                                    <i class="fas fa-plus me-1"></i>Tạo bài viết
-                                </a>
-                            }
-                            else
-                            {
-                                <p class="text-muted">Người dùng này chưa có bài viết nào</p>
-                            }
-                        </div>
-                    }
-                </div>
+<!-- Cover Photo Modal -->
+<div class="modal fade" id="coverPhotoModal" tabindex="-1" aria-labelledby="coverPhotoModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="coverPhotoModalLabel">
+                    <i class="fas fa-image text-primary me-2"></i>
+                    Thay đổi ảnh bìa
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <form asp-controller="Profile" asp-action="UpdateCoverPhoto" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <label for="coverFile" class="form-label">Chọn ảnh bìa</label>
+                        <input type="file" class="form-control" id="coverFile" name="coverFile" accept="image/*">
+                    </div>
+                    <div class="text-center">
+                        <img id="coverPreview" src="#" alt="Cover Preview" class="img-fluid rounded" style="max-height: 200px; display: none;">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary">Lưu thay đổi</button>
             </div>
         </div>
     </div>
@@ -232,110 +310,50 @@
 
 @section Scripts {
     <script>
-        $(document).ready(function() {
-            // Load thống kê
-            loadUserStats();
-            
-            // Xử lý like bài viết
-            $('.like-btn').click(function() {
-                var postId = $(this).data('post-id');
-                toggleLike(postId);
-            });
-            
-            // Xử lý bình luận
-            $('.comment-form').submit(function(e) {
-                e.preventDefault();
-                var postId = $(this).data('post-id');
-                var content = $(this).find('input[name="Content"]').val();
-                createComment(postId, content);
-            });
+        // Avatar preview
+        document.getElementById('avatarFile')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const img = document.getElementById('avatarPreview');
+                    if (img) img.src = ev.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
         });
 
-        function loadUserStats() {
-            // TODO: Load user statistics
-            $('#postCount').text('@((ViewBag.Posts as IEnumerable<OkeanBook.Models.ViewModels.PostViewModel>)?.Count() ?? 0)');
-        }
-
-        function sendFriendRequest(userId) {
-            $.post('@Url.Action("SendFriendRequest", "Friend")', { friendId: userId })
-                .done(function(response) {
-                    if (response.success) {
-                        showAlert('success', response.message);
-                        location.reload();
-                    } else {
-                        showAlert('danger', response.message);
+        // Cover photo preview
+        document.getElementById('coverFile')?.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(ev) {
+                    const preview = document.getElementById('coverPreview');
+                    if (preview) {
+                        preview.src = ev.target.result;
+                        preview.style.display = 'block';
                     }
-                });
-        }
-
-        function removeFriend(userId) {
-            if (confirm('Bạn có chắc chắn muốn xóa bạn bè này?')) {
-                $.post('@Url.Action("RemoveFriend", "Friend")', { friendId: userId })
-                    .done(function(response) {
-                        if (response.success) {
-                            showAlert('success', response.message);
-                            location.reload();
-                        } else {
-                            showAlert('danger', response.message);
-                        }
-                    });
+                };
+                reader.readAsDataURL(file);
             }
-        }
+        });
 
-        function unblockUser(userId) {
-            $.post('@Url.Action("UnblockUser", "Friend")', { userId: userId })
-                .done(function(response) {
-                    if (response.success) {
-                        showAlert('success', response.message);
-                        location.reload();
-                    } else {
-                        showAlert('danger', response.message);
-                    }
-                });
-        }
-
-        function toggleLike(postId) {
-            $.post('@Url.Action("ToggleLike", "Home")', { postId: postId })
-                .done(function(response) {
-                    if (response.success) {
-                        var btn = $('.like-btn[data-post-id="' + postId + '"]');
-                        var icon = btn.find('i');
-                        var count = btn.find('.like-count');
-                        
-                        if (response.isLiked) {
-                            icon.addClass('text-danger');
-                        } else {
-                            icon.removeClass('text-danger');
-                        }
-                        
-                        count.text(response.likeCount);
-                    }
-                });
-        }
-
-        function createComment(postId, content) {
-            $.post('@Url.Action("CreateComment", "Home")', {
-                PostId: postId,
-                Content: content
-            }).done(function(response) {
-                if (response.success) {
-                    location.reload();
+        // Like buttons
+        document.querySelectorAll('.like-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+                const icon = this.querySelector('i');
+                if (icon.classList.contains('far')) {
+                    icon.classList.remove('far');
+                    icon.classList.add('fas');
+                    this.classList.add('text-red-400');
+                } else {
+                    icon.classList.remove('fas');
+                    icon.classList.add('far');
+                    this.classList.remove('text-red-400');
                 }
             });
-        }
-
-        function showAlert(type, message) {
-            var alertHtml = `
-                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
-                    ${message}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                </div>
-            `;
-            $('body').prepend(alertHtml);
-            
-            setTimeout(function() {
-                $('.alert').alert('close');
-            }, 3000);
-        }
+        });
     </script>
 }

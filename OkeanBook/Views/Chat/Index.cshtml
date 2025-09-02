@@ -1,301 +1,387 @@
 @model OkeanBook.Models.ViewModels.ChatViewModel
-
 @{
-    ViewData["Title"] = "Chat";
+    ViewData["Title"] = "Chat - OkeanBook";
 }
 
-<div class="row h-100">
-    <!-- Danh sách chat -->
-    <div class="col-md-4 border-end">
-        <div class="d-flex flex-column h-100">
-            <!-- Header -->
-            <div class="p-3 border-bottom">
-                <h5 class="mb-0">Tin nhắn</h5>
-            </div>
-
-            <!-- Tìm kiếm -->
-            <div class="p-3 border-bottom">
-                <div class="input-group">
-                    <input type="text" class="form-control" placeholder="Tìm kiếm cuộc trò chuyện...">
-                    <button class="btn btn-outline-secondary" type="button">
-                        <i class="fas fa-search"></i>
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900">
+    <div class="flex h-screen">
+        <!-- Enhanced Chat Sidebar -->
+        <div class="w-full md:w-80 lg:w-96 bg-white/10 backdrop-blur-xl border-r border-white/20 flex flex-col shadow-2xl">
+            <!-- Enhanced Chat Header -->
+            <div class="p-6 border-b border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+                <div class="flex items-center justify-between">
+                    <h5 class="text-white font-bold text-xl flex items-center">
+                        <div class="w-10 h-10 bg-gradient-to-r from-purple-500 to-blue-500 rounded-2xl flex items-center justify-center mr-3">
+                            <i class="fas fa-comments text-white text-lg"></i>
+                        </div>
+                        <span class="bg-gradient-to-r from-white to-purple-200 bg-clip-text text-transparent">Tin nhắn</span>
+                    </h5>
+                    <button class="group bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white p-3 rounded-2xl transition-all duration-300 hover:scale-110 transform shadow-lg hover:shadow-purple-500/25" data-bs-toggle="modal" data-bs-target="#newChatModal">
+                        <i class="fas fa-plus text-lg group-hover:scale-110 transition-transform duration-200"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Danh sách bạn bè -->
-            <div class="flex-grow-1 overflow-auto">
-                <div class="list-group list-group-flush">
+            <!-- Enhanced Search Bar -->
+            <div class="p-4 border-b border-white/20">
+                <div class="relative group">
+                    <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                        <i class="fas fa-search text-white/60 group-hover:text-purple-300 transition-colors duration-300"></i>
+                    </div>
+                    <input type="text" class="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl pl-12 pr-4 py-3 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400/50 transition-all duration-300 group-hover:border-purple-400/50" placeholder="Tìm kiếm cuộc trò chuyện...">
+                </div>
+            </div>
+
+            <!-- Enhanced Chat List -->
+            <div class="flex-1 overflow-y-auto p-2">
+                @if (Model.Friends != null && Model.Friends.Any())
+                {
                     @foreach (var friend in Model.Friends)
                     {
-                        <a href="#" class="list-group-item list-group-item-action chat-item" 
-                           data-chat-id="@friend.Id" data-is-group="false">
-                            <div class="d-flex align-items-center">
-                                <div class="position-relative me-3">
-                                    <img src="@(friend.Avatar ?? "/img/default-avatar.png")" 
-                                         class="rounded-circle" width="40" height="40" alt="Avatar">
-                                    <span class="position-absolute bottom-0 end-0 badge rounded-pill bg-success 
-                                          @(friend.Status == OkeanBook.Models.UserStatus.Online ? "" : "d-none")" 
-                                          style="width: 12px; height: 12px;"></span>
+                        <div class="chat-item group p-4 rounded-2xl mx-2 mb-2 cursor-pointer hover:bg-white/10 transition-all duration-300 border border-transparent hover:border-purple-400/30" data-user-id="@friend.Id">
+                            <div class="flex items-center">
+                                <div class="relative mr-4">
+                                    <img src="@(friend.Avatar ?? "~/img/default-avatar.png")" alt="Avatar" class="w-14 h-14 rounded-2xl ring-2 ring-purple-500/30 shadow-lg group-hover:ring-purple-400 transition-all duration-300">
+                                    <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800 animate-pulse"></div>
                                 </div>
-                                <div class="flex-grow-1">
-                                    <h6 class="mb-1">@friend.UserName</h6>
-                                    <p class="mb-1 text-muted small">@(friend.LastMessage ?? "Chưa có tin nhắn")</p>
+                                <div class="flex-1 min-w-0">
+                                    <h6 class="text-white font-semibold mb-1 group-hover:text-purple-200 transition-colors duration-300">@friend.UserName</h6>
+                                    <p class="text-white/60 text-sm truncate">Hoạt động gần đây</p>
                                 </div>
-                                <div class="text-end">
-                                    <small class="text-muted">@friend.LastMessageTime?.ToString("HH:mm")</small>
-                                    @if (friend.UnreadCount > 0)
-                                    {
-                                        <span class="badge bg-primary rounded-pill">@friend.UnreadCount</span>
-                                    }
+                                <div class="text-right">
+                                    <p class="text-white/60 text-xs mb-2">12:30</p>
+                                    <span class="bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs rounded-full px-3 py-1 font-bold shadow-lg">2</span>
                                 </div>
                             </div>
-                        </a>
+                        </div>
                     }
-                </div>
-
-                <!-- Danh sách nhóm -->
-                @if (Model.Groups.Any())
+                }
+                else
                 {
-                    <div class="p-3 border-top">
-                        <h6 class="text-muted">Nhóm</h6>
-                    </div>
-                    <div class="list-group list-group-flush">
-                        @foreach (var group in Model.Groups)
-                        {
-                            <a href="#" class="list-group-item list-group-item-action chat-item" 
-                               data-chat-id="@group.Id" data-is-group="true">
-                                <div class="d-flex align-items-center">
-                                    <img src="@(group.Avatar ?? "/img/default-group.png")" 
-                                         class="rounded-circle me-3" width="40" height="40" alt="Group">
-                                    <div class="flex-grow-1">
-                                        <h6 class="mb-1">@group.Name</h6>
-                                        <p class="mb-1 text-muted small">@(group.LastMessage ?? "Chưa có tin nhắn")</p>
-                                    </div>
-                                    <div class="text-end">
-                                        <small class="text-muted">@group.LastMessageTime?.ToString("HH:mm")</small>
-                                        @if (group.UnreadCount > 0)
-                                        {
-                                            <span class="badge bg-primary rounded-pill">@group.UnreadCount</span>
-                                        }
-                                    </div>
-                                </div>
-                            </a>
-                        }
+                    <div class="text-center py-12 px-4">
+                        <div class="w-20 h-20 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-3xl flex items-center justify-center mx-auto mb-6">
+                            <i class="fas fa-comments text-purple-400 text-3xl"></i>
+                        </div>
+                        <h6 class="text-white/80 text-lg mb-3 font-semibold">Chưa có cuộc trò chuyện nào</h6>
+                        <p class="text-white/60">Bắt đầu trò chuyện với bạn bè của bạn!</p>
+                        <button class="mt-4 bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-2 rounded-xl font-medium transition-all duration-300 hover:scale-105 transform shadow-lg">
+                            <i class="fas fa-plus mr-2"></i>Tìm bạn bè
+                        </button>
                     </div>
                 }
             </div>
         </div>
-    </div>
 
-    <!-- Khu vực chat -->
-    <div class="col-md-8 d-flex flex-column">
-        @if (!string.IsNullOrEmpty(Model.SelectedChatId))
-        {
-            <!-- Header chat -->
-            <div class="p-3 border-bottom d-flex align-items-center">
-                <div class="d-flex align-items-center">
-                    <img id="chatAvatar" src="/img/default-avatar.png" 
-                         class="rounded-circle me-3" width="40" height="40" alt="Avatar">
+        <!-- Enhanced Chat Main Area -->
+        <div class="flex-1 bg-white/5 backdrop-blur-sm flex flex-col">
+            <!-- Enhanced Chat Header -->
+            <div class="p-6 border-b border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10 flex items-center justify-between">
+                <div class="flex items-center">
+                    <div class="relative mr-4">
+                        <img src="~/img/default-avatar.png" alt="Avatar" class="w-12 h-12 rounded-2xl ring-2 ring-purple-500/30 shadow-lg">
+                        <div class="absolute -bottom-1 -right-1 w-4 h-4 bg-green-500 rounded-full border-2 border-slate-800"></div>
+                    </div>
                     <div>
-                        <h6 class="mb-0" id="chatName">Tên người dùng</h6>
-                        <small class="text-muted" id="chatStatus">Đang online</small>
+                        <h6 class="text-white font-bold text-lg mb-1" id="chatUserName">Chọn một cuộc trò chuyện</h6>
+                        <p class="text-white/60 text-sm" id="chatUserStatus">Để bắt đầu trò chuyện</p>
                     </div>
                 </div>
-                <div class="ms-auto">
-                    <button class="btn btn-outline-secondary btn-sm">
-                        <i class="fas fa-phone"></i>
+                <div class="flex space-x-3">
+                    <button class="group text-white/70 hover:text-white p-3 rounded-xl hover:bg-white/10 transition-all duration-300" title="Thông tin">
+                        <i class="fas fa-info-circle text-lg group-hover:scale-110 transition-transform duration-200"></i>
                     </button>
-                    <button class="btn btn-outline-secondary btn-sm">
-                        <i class="fas fa-video"></i>
+                    <button class="group text-white/70 hover:text-white p-3 rounded-xl hover:bg-white/10 transition-all duration-300" title="Tùy chọn">
+                        <i class="fas fa-ellipsis-v text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                    </button>
+                    <button class="group text-white/70 hover:text-white p-3 rounded-xl hover:bg-white/10 transition-all duration-300" title="Cuộc gọi">
+                        <i class="fas fa-phone text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                    </button>
+                    <button class="group text-white/70 hover:text-white p-3 rounded-xl hover:bg-white/10 transition-all duration-300" title="Video call">
+                        <i class="fas fa-video text-lg group-hover:scale-110 transition-transform duration-200"></i>
                     </button>
                 </div>
             </div>
 
-            <!-- Danh sách tin nhắn -->
-            <div class="flex-grow-1 overflow-auto p-3" id="messagesContainer">
-                @foreach (var message in Model.Messages)
-                {
-                    <div class="d-flex @(message.IsOwn ? "justify-content-end" : "justify-content-start") mb-3">
-                        <div class="message @(message.IsOwn ? "message-own" : "message-other")">
-                            @if (!message.IsOwn)
-                            {
-                                <img src="@(message.SenderAvatar ?? "/img/default-avatar.png")" 
-                                     class="rounded-circle me-2" width="24" height="24" alt="Avatar">
-                            }
-                            <div class="message-content">
-                                <p class="mb-1">@message.Content</p>
-                                <small class="text-muted">@message.SentAt.ToString("HH:mm")</small>
-                            </div>
+            <!-- Enhanced Messages Area -->
+            <div class="flex-1 overflow-y-auto p-6 bg-gradient-to-br from-slate-900/50 to-purple-900/20" id="messagesContainer">
+                <div class="text-center py-16" id="noChatSelected">
+                    <div class="w-24 h-24 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-3xl flex items-center justify-center mx-auto mb-8">
+                        <i class="fas fa-comment-dots text-purple-400 text-4xl"></i>
+                    </div>
+                    <h5 class="text-white/80 text-2xl mb-4 font-bold">Chọn một cuộc trò chuyện</h5>
+                    <p class="text-white/60 text-lg">Để bắt đầu trò chuyện với bạn bè của bạn</p>
+                    <div class="mt-8 flex justify-center space-x-4">
+                        <button class="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-8 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 transform shadow-lg hover:shadow-purple-500/25">
+                            <i class="fas fa-search mr-2"></i>Tìm bạn bè
+                        </button>
+                        <button class="bg-white/10 hover:bg-white/20 text-white px-8 py-3 rounded-2xl font-semibold transition-all duration-300 hover:scale-105 transform border border-white/20 hover:border-purple-400/50">
+                            <i class="fas fa-users mr-2"></i>Xem danh sách
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Enhanced Message Input -->
+            <div class="p-6 border-t border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+                <div class="flex items-center space-x-4">
+                    <!-- Attachment Button -->
+                    <button class="group text-white/70 hover:text-white p-3 rounded-2xl hover:bg-white/10 transition-all duration-300" title="Đính kèm file">
+                        <i class="fas fa-paperclip text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                    </button>
+                    
+                    <!-- Image Button -->
+                    <button class="group text-white/70 hover:text-white p-3 rounded-2xl hover:bg-white/10 transition-all duration-300" title="Gửi ảnh">
+                        <i class="fas fa-image text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                    </button>
+                    
+                    <!-- Emoji Button -->
+                    <button class="group text-white/70 hover:text-white p-3 rounded-2xl hover:bg-white/10 transition-all duration-300" title="Biểu tượng cảm xúc">
+                        <i class="fas fa-smile text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                    </button>
+                    
+                    <!-- Message Input -->
+                    <div class="flex-1 relative">
+                        <input type="text" class="w-full bg-white/10 backdrop-blur-sm border border-white/20 rounded-2xl px-6 py-4 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400/50 transition-all duration-300 resize-none" id="messageInput" placeholder="Nhập tin nhắn..." disabled>
+                        <div class="absolute right-4 top-1/2 transform -translate-y-1/2 text-white/40 text-sm">
+                            <span id="charCount">0</span>/500
                         </div>
                     </div>
-                }
-            </div>
-
-            <!-- Form gửi tin nhắn -->
-            <div class="p-3 border-top">
-                <form id="messageForm">
-                    <div class="input-group">
-                        <input type="text" id="messageInput" class="form-control" 
-                               placeholder="Nhập tin nhắn..." autocomplete="off">
-                        <button type="button" class="btn btn-outline-secondary">
-                            <i class="fas fa-paperclip"></i>
-                        </button>
-                        <button type="button" class="btn btn-outline-secondary">
-                            <i class="fas fa-smile"></i>
-                        </button>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                </form>
-            </div>
-        }
-        else
-        {
-            <!-- Màn hình chào mừng -->
-            <div class="d-flex align-items-center justify-content-center h-100">
-                <div class="text-center">
-                    <i class="fas fa-comments text-muted" style="font-size: 4rem;"></i>
-                    <h4 class="mt-3 text-muted">Chọn cuộc trò chuyện</h4>
-                    <p class="text-muted">Chọn một cuộc trò chuyện để bắt đầu chat</p>
+                    
+                    <!-- Send Button -->
+                    <button class="group bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white p-4 rounded-2xl transition-all duration-300 hover:scale-110 transform shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed" id="sendButton" disabled>
+                        <i class="fas fa-paper-plane text-lg group-hover:scale-110 transition-transform duration-200"></i>
+                    </button>
+                </div>
+                
+                <!-- Typing Indicator -->
+                <div class="mt-3 text-white/60 text-sm hidden" id="typingIndicator">
+                    <i class="fas fa-circle text-purple-400 animate-pulse mr-2"></i>
+                    <span id="typingText">Đang nhập...</span>
                 </div>
             </div>
-        }
+        </div>
     </div>
 </div>
 
-@section Scripts {
-    <script src="~/lib/microsoft-signalr/signalr.min.js"></script>
-    <script>
-        let connection;
-        let currentChatId = '@Model.SelectedChatId';
-        let isGroupChat = @Model.IsGroupChat.ToString().ToLower();
 
-        $(document).ready(function() {
-            // Khởi tạo SignalR connection
+
+@section Scripts {
+    <script>
+        let currentUserId = '@User.Identity.Name';
+        let selectedUserId = null;
+        let connection = null;
+
+        // Initialize SignalR connection
+        function initializeSignalR() {
             connection = new signalR.HubConnectionBuilder()
                 .withUrl("/chatHub")
                 .build();
 
-            // Bắt đầu connection
             connection.start().then(function () {
                 console.log("SignalR Connected");
             }).catch(function (err) {
                 console.error("SignalR Connection Error: " + err.toString());
             });
 
-            // Xử lý chọn chat
-            $('.chat-item').click(function(e) {
-                e.preventDefault();
-                var chatId = $(this).data('chat-id');
-                var isGroup = $(this).data('is-group');
-                
-                // Cập nhật UI
-                $('.chat-item').removeClass('active');
-                $(this).addClass('active');
-                
-                // Load tin nhắn
-                loadMessages(chatId, isGroup);
-            });
-
-            // Xử lý gửi tin nhắn
-            $('#messageForm').submit(function(e) {
-                e.preventDefault();
-                var message = $('#messageInput').val().trim();
-                if (message && currentChatId) {
-                    sendMessage(message);
-                    $('#messageInput').val('');
+            // Listen for incoming messages
+            connection.on("ReceiveMessage", function (senderId, receiverId, message, timestamp) {
+                if (selectedUserId === senderId) {
+                    addMessageToChat(senderId, message, timestamp, false);
                 }
             });
 
-            // Xử lý nhấn Enter
-            $('#messageInput').keypress(function(e) {
-                if (e.which === 13) {
-                    $('#messageForm').submit();
+            // Listen for typing indicators
+            connection.on("UserTyping", function (userId, isTyping) {
+                if (selectedUserId === userId) {
+                    updateTypingIndicator(userId, isTyping);
                 }
+            });
+        }
+
+        // Chat item click handler
+        document.querySelectorAll('.chat-item').forEach(item => {
+            item.addEventListener('click', function() {
+                selectedUserId = this.dataset.userId;
+                const userName = this.querySelector('h6').textContent;
+                const userStatus = this.querySelector('p').textContent;
+                
+                // Update chat header
+                document.getElementById('chatUserName').textContent = userName;
+                document.getElementById('chatUserStatus').textContent = userStatus;
+                
+                // Enable message input
+                document.getElementById('messageInput').disabled = false;
+                document.getElementById('sendButton').disabled = false;
+                
+                // Hide no chat selected message
+                document.getElementById('noChatSelected').style.display = 'none';
+                
+                // Load messages for this user
+                loadMessages(selectedUserId);
+                
+                // Update active chat item
+                document.querySelectorAll('.chat-item').forEach(chat => chat.classList.remove('active'));
+                this.classList.add('active');
             });
         });
 
-        // SignalR event handlers
-        connection.on("ReceiveMessage", function (message) {
-            addMessageToUI(message);
-        });
-
-        connection.on("ReceiveGroupMessage", function (message) {
-            if (message.groupId == currentChatId) {
-                addMessageToUI(message);
-            }
-        });
-
-        connection.on("UserTyping", function (userId) {
-            // TODO: Hiển thị "đang nhập..."
-        });
-
-        connection.on("UserStoppedTyping", function (userId) {
-            // TODO: Ẩn "đang nhập..."
-        });
-
-        function loadMessages(chatId, isGroup) {
-            currentChatId = chatId;
-            isGroupChat = isGroup;
+        // Send message
+        document.getElementById('sendButton').addEventListener('click', function() {
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value.trim();
             
-            var url = isGroup ? 
-                '@Url.Action("GetGroupMessages", "Chat")' + '?groupId=' + chatId :
-                '@Url.Action("GetMessages", "Chat")' + '?friendId=' + chatId;
-                
-            $.get(url)
-                .done(function(response) {
-                    if (response.success) {
-                        displayMessages(response.messages);
-                    }
+            if (message && selectedUserId && connection) {
+                connection.invoke("SendMessage", selectedUserId, message).catch(function (err) {
+                    console.error("Send Message Error: " + err.toString());
                 });
-        }
-
-        function sendMessage(content) {
-            if (isGroupChat) {
-                connection.invoke("SendGroupMessage", parseInt(currentChatId), content, "Text");
-            } else {
-                connection.invoke("SendPrivateMessage", currentChatId, content, "Text");
+                
+                addMessageToChat(currentUserId, message, new Date().toISOString(), true);
+                messageInput.value = '';
+                updateCharCount(0);
             }
+        });
+
+        // Enter key to send message
+        document.getElementById('messageInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                document.getElementById('sendButton').click();
+            }
+        });
+
+        // Character count
+        document.getElementById('messageInput').addEventListener('input', function() {
+            updateCharCount(this.value.length);
+        });
+
+        function updateCharCount(count) {
+            document.getElementById('charCount').textContent = count;
         }
 
-        function addMessageToUI(message) {
-            var messageHtml = createMessageHtml(message);
-            $('#messagesContainer').append(messageHtml);
-            scrollToBottom();
-        }
+        // Typing indicator
+        let typingTimer;
+        document.getElementById('messageInput').addEventListener('input', function() {
+            if (selectedUserId && connection) {
+                connection.invoke("SendTypingIndicator", selectedUserId, true);
+                
+                clearTimeout(typingTimer);
+                typingTimer = setTimeout(() => {
+                    connection.invoke("SendTypingIndicator", selectedUserId, false);
+                }, 1000);
+            }
+        });
 
-        function displayMessages(messages) {
-            $('#messagesContainer').empty();
-            messages.forEach(function(message) {
-                var messageHtml = createMessageHtml(message);
-                $('#messagesContainer').append(messageHtml);
-            });
-            scrollToBottom();
-        }
-
-        function createMessageHtml(message) {
-            var isOwn = message.isOwn;
-            var alignment = isOwn ? 'justify-content-end' : 'justify-content-start';
-            var messageClass = isOwn ? 'message-own' : 'message-other';
+        // Add message to chat
+        function addMessageToChat(senderId, message, timestamp, isOwn) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isOwn ? 'own-message' : 'other-message'} mb-6`;
             
-            return `
-                <div class="d-flex ${alignment} mb-3">
-                    <div class="message ${messageClass}">
-                        ${!isOwn ? `<img src="${message.senderAvatar || '/img/default-avatar.png'}" class="rounded-circle me-2" width="24" height="24" alt="Avatar">` : ''}
-                        <div class="message-content">
-                            <p class="mb-1">${message.content}</p>
-                            <small class="text-muted">${new Date(message.sentAt).toLocaleTimeString('vi-VN', {hour: '2-digit', minute: '2-digit'})}</small>
+            const time = new Date(timestamp).toLocaleTimeString('vi-VN', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
+            messageDiv.innerHTML = `
+                <div class="flex ${isOwn ? 'justify-end' : 'justify-start'}">
+                    <div class="message-bubble ${isOwn ? 'bg-gradient-to-r from-purple-600 to-blue-600 text-white' : 'bg-white/10 backdrop-blur-sm text-white border border-white/20'} rounded-3xl p-4 shadow-lg max-w-xs lg:max-w-md" style="word-wrap: break-word;">
+                        <div class="message-content text-sm leading-relaxed">${message}</div>
+                        <div class="message-time text-end mt-2 text-xs opacity-70">
+                            ${time}
                         </div>
                     </div>
                 </div>
             `;
+            
+            messagesContainer.appendChild(messageDiv);
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
 
-        function scrollToBottom() {
-            var container = $('#messagesContainer');
-            container.scrollTop(container[0].scrollHeight);
+        // Load messages for a user
+        function loadMessages(userId) {
+            // This would typically make an AJAX call to load messages
+            // For now, we'll just clear the container
+            const messagesContainer = document.getElementById('messagesContainer');
+            messagesContainer.innerHTML = '';
         }
+
+        // Update typing indicator
+        function updateTypingIndicator(userId, isTyping) {
+            const typingIndicator = document.getElementById('typingIndicator');
+            const typingText = document.getElementById('typingText');
+            
+            if (isTyping) {
+                typingIndicator.classList.remove('hidden');
+                typingText.textContent = 'Đang nhập...';
+            } else {
+                typingIndicator.classList.add('hidden');
+            }
+        }
+
+        // Start new chat
+        document.getElementById('startChatBtn').addEventListener('click', function() {
+            const friendSelect = document.getElementById('friendSelect');
+            const selectedFriendId = friendSelect.value;
+            
+            if (selectedFriendId) {
+                // Find and click the chat item for this friend
+                const chatItem = document.querySelector(`[data-user-id="${selectedFriendId}"]`);
+                if (chatItem) {
+                    chatItem.click();
+                }
+                
+                // Close modal
+                const modal = bootstrap.Modal.getInstance(document.getElementById('newChatModal'));
+                modal.hide();
+            }
+        });
+
+        // Initialize when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            initializeSignalR();
+        });
     </script>
+
+    <style>
+        .chat-item {
+            transition: all 0.3s ease;
+        }
+        
+        .chat-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .chat-item.active {
+            background: linear-gradient(135deg, rgba(147, 51, 234, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+            border-color: rgba(147, 51, 234, 0.5);
+        }
+        
+        .message-bubble {
+            transition: all 0.3s ease-out;
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .message-bubble.new-message {
+            animation: slideInUp 0.3s ease-out;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: linear-gradient(135deg, #7c3aed, #2563eb);
+        }
+    </style>
 }

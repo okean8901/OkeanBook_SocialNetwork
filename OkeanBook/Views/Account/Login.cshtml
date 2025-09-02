@@ -1,69 +1,127 @@
 @model OkeanBook.Models.ViewModels.LoginViewModel
-
 @{
-    ViewData["Title"] = "Đăng nhập";
+    ViewData["Title"] = "Đăng nhập - OkeanBook";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-6 col-lg-4">
-        <div class="card shadow">
-            <div class="card-body p-5">
-                <div class="text-center mb-4">
-                    <img src="~/img/logo.jpg" alt="OkeanBook" width="80" height="80" class="rounded-circle mb-3">
-                    <h3 class="card-title">Đăng nhập OkeanBook</h3>
-                    <p class="text-muted">Chào mừng bạn trở lại!</p>
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900 flex items-center justify-center p-4 relative overflow-hidden">
+    <!-- Background Elements -->
+    <div class="absolute inset-0 overflow-hidden">
+        <div class="absolute -top-40 -right-40 w-80 h-80 bg-purple-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute -bottom-40 -left-40 w-80 h-80 bg-blue-500/20 rounded-full blur-3xl"></div>
+        <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-gradient-to-r from-purple-500/10 to-blue-500/10 rounded-full blur-3xl"></div>
+    </div>
+
+    <div class="w-full max-w-lg relative z-10">
+        <div class="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl overflow-hidden border border-white/20">
+            <div class="p-10">
+                <!-- Enhanced Logo Section -->
+                <div class="text-center mb-10">
+                    <div class="relative inline-block mb-6">
+                        <img src="~/img/logo.jpg" alt="OkeanBook" class="w-24 h-24 rounded-3xl shadow-2xl ring-4 ring-purple-500/30">
+                        <div class="absolute inset-0 rounded-3xl bg-gradient-to-r from-purple-500/20 to-blue-500/20 opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+                    </div>
+                    <h2 class="text-4xl font-bold bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 bg-clip-text text-transparent mb-3">OkeanBook</h2>
+                    <p class="text-gray-600 text-lg">Đăng nhập để kết nối với bạn bè</p>
                 </div>
 
-                <form asp-action="Login" method="post">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                    
-                    <div class="mb-3">
-                        <label asp-for="Email" class="form-label">Email</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-envelope"></i></span>
-                            <input asp-for="Email" class="form-control" placeholder="Nhập email của bạn" />
-                        </div>
-                        <span asp-validation-for="Email" class="text-danger"></span>
-                    </div>
+                <!-- Enhanced Login Form -->
+                <form asp-controller="Account" asp-action="Login" method="post" class="space-y-6">
+                    <div asp-validation-summary="ModelOnly" class="bg-gradient-to-r from-red-50 to-pink-50 border border-red-200 text-red-700 px-6 py-4 rounded-2xl mb-6" role="alert"></div>
 
-                    <div class="mb-3">
-                        <label asp-for="Password" class="form-label">Mật khẩu</label>
-                        <div class="input-group">
-                            <span class="input-group-text"><i class="fas fa-lock"></i></span>
-                            <input asp-for="Password" class="form-control" placeholder="Nhập mật khẩu" />
-                        </div>
-                        <span asp-validation-for="Password" class="text-danger"></span>
-                    </div>
-
-                    <div class="mb-3 form-check">
-                        <input asp-for="RememberMe" class="form-check-input" />
-                        <label asp-for="RememberMe" class="form-check-label">
-                            Ghi nhớ đăng nhập
+                    <!-- Email Field -->
+                    <div class="group">
+                        <label asp-for="Email" class="block text-gray-700 font-semibold mb-3 text-lg">
+                            <i class="fas fa-envelope text-purple-500 mr-3"></i>Email
                         </label>
+                        <div class="relative">
+                            <input asp-for="Email" class="w-full px-6 py-4 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-lg transition-all duration-300 group-hover:border-purple-300" placeholder="Nhập email của bạn">
+                            <div class="absolute inset-y-0 right-0 pr-4 flex items-center">
+                                <i class="fas fa-at text-gray-400 group-hover:text-purple-400 transition-colors duration-300"></i>
+                            </div>
+                        </div>
+                        <span asp-validation-for="Email" class="text-red-500 text-sm mt-2 block"></span>
                     </div>
 
-                    <div class="d-grid">
-                        <button type="submit" class="btn btn-primary btn-lg">
-                            <i class="fas fa-sign-in-alt me-2"></i>Đăng nhập
+                    <!-- Password Field -->
+                    <div class="group">
+                        <label asp-for="Password" class="block text-gray-700 font-semibold mb-3 text-lg">
+                            <i class="fas fa-lock text-purple-500 mr-3"></i>Mật khẩu
+                        </label>
+                        <div class="relative">
+                            <input asp-for="Password" class="w-full px-6 py-4 pr-16 border-2 border-gray-200 rounded-2xl focus:outline-none focus:ring-4 focus:ring-purple-500/20 focus:border-purple-500 text-lg transition-all duration-300 group-hover:border-purple-300" placeholder="Nhập mật khẩu" id="passwordInput">
+                            <button class="absolute inset-y-0 right-0 pr-4 flex items-center text-gray-400 hover:text-purple-500 transition-colors duration-300" type="button" id="togglePassword">
+                                <i class="fas fa-eye" id="toggleIcon"></i>
+                            </button>
+                        </div>
+                        <span asp-validation-for="Password" class="text-red-500 text-sm mt-2 block"></span>
+                    </div>
+
+                    <!-- Remember Me -->
+                    <div class="flex items-center">
+                        <input asp-for="RememberMe" class="w-5 h-5 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500">
+                        <label asp-for="RememberMe" class="ml-2 text-gray-700">Ghi nhớ đăng nhập</label>
+                    </div>
+
+                    <!-- Submit Button -->
+                    <div class="pt-2">
+                        <button type="submit" class="w-full bg-gradient-to-r from-purple-600 via-blue-600 to-purple-600 hover:from-purple-700 hover:via-blue-700 hover:to-purple-700 text-white font-bold py-4 px-8 rounded-2xl transition-all duration-300 transform hover:scale-105 shadow-2xl hover:shadow-purple-500/25 flex items-center justify-center text-lg">
+                            <i class="fas fa-sign-in-alt mr-3 text-xl"></i>Đăng nhập
                         </button>
                     </div>
-                </form>
 
-                <div class="text-center mt-4">
-                    <p class="mb-2">
-                        <a asp-action="ForgotPassword" class="text-decoration-none">Quên mật khẩu?</a>
-                    </p>
-                    <p>
-                        Chưa có tài khoản? 
-                        <a asp-action="Register" class="text-decoration-none fw-bold">Đăng ký ngay</a>
-                    </p>
-                </div>
+                    <!-- Forgot Password -->
+                    <div class="text-center pt-2">
+                        <a asp-controller="Account" asp-action="ForgotPassword" class="text-purple-600 hover:text-purple-800 font-semibold text-lg transition-colors duration-300 hover:underline">
+                            <i class="fas fa-key mr-2"></i>Quên mật khẩu?
+                        </a>
+                    </div>
+
+                    <!-- Register Link -->
+                    <div class="text-center mt-6">
+                        <p class="text-gray-600">
+                            Chưa có tài khoản? 
+                            <a asp-controller="Account" asp-action="Register" class="text-purple-600 hover:text-purple-800 font-semibold">Đăng ký ngay</a>
+                        </p>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    <script>
+        // Toggle password visibility
+        document.getElementById('togglePassword').addEventListener('click', function() {
+            const passwordInput = document.getElementById('passwordInput');
+            const toggleIcon = document.getElementById('toggleIcon');
+            
+            if (passwordInput.type === 'password') {
+                passwordInput.type = 'text';
+                toggleIcon.classList.remove('fa-eye');
+                toggleIcon.classList.add('fa-eye-slash');
+            } else {
+                passwordInput.type = 'password';
+                toggleIcon.classList.remove('fa-eye-slash');
+                toggleIcon.classList.add('fa-eye');
+            }
+        });
+
+        // Simple validation
+        document.querySelector('form').addEventListener('submit', function(e) {
+            const email = document.querySelector('input[name="Email"]').value;
+            const password = document.querySelector('input[name="Password"]').value;
+            
+            if (!email || !password) {
+                e.preventDefault();
+                alert('Vui lòng điền đầy đủ thông tin!');
+            }
+        });
+
+        // Auto-focus on email input
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelector('input[name="Email"]').focus();
+        });
+    </script>
 }

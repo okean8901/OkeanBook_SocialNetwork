@@ -4,62 +4,58 @@
     ViewData["Title"] = "Chỉnh sửa hồ sơ";
 }
 
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="mb-0">Chỉnh sửa hồ sơ</h5>
+<div class="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900/20 to-slate-900 py-8">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="bg-white/10 backdrop-blur-xl rounded-3xl border border-white/20 shadow-2xl overflow-hidden">
+            <div class="p-6 border-b border-white/20 bg-gradient-to-r from-purple-500/10 to-blue-500/10">
+                <h5 class="text-white font-bold text-xl flex items-center">
+                    <i class="fas fa-user-edit text-purple-300 mr-3"></i>
+                    Chỉnh sửa hồ sơ
+                </h5>
             </div>
-            <div class="card-body">
-                <form asp-action="Edit" method="post" enctype="multipart/form-data">
-                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
-                    
-                    <div class="row">
-                        <div class="col-md-4 text-center">
-                            <div class="mb-3">
-                                <img id="avatarPreview" src="/img/default-avatar.png" 
-                                     class="rounded-circle mb-2" width="120" height="120" alt="Avatar">
-                                <div>
-                                    <label for="AvatarFile" class="btn btn-outline-primary btn-sm">
-                                        <i class="fas fa-camera me-1"></i>Thay đổi ảnh
-                                    </label>
-                                    <input type="file" asp-for="AvatarFile" id="AvatarFile" 
-                                           class="d-none" accept="image/*" onchange="previewAvatar(this)">
-                                </div>
-                            </div>
+            <div class="p-8">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data" class="space-y-6">
+                    <div asp-validation-summary="ModelOnly" class="px-4 py-3 rounded-2xl bg-red-500/10 border border-red-500/30 text-red-300"></div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                        <!-- Avatar -->
+                        <div class="text-center">
+                            <img id="avatarPreview" src="~/img/default-avatar.png" class="w-32 h-32 rounded-2xl ring-4 ring-white/20 mx-auto mb-3 object-cover" alt="Avatar">
+                            <label for="AvatarFile" class="inline-flex items-center px-4 py-2 rounded-2xl border border-white/20 text-white/80 hover:text-white hover:bg-white/10 cursor-pointer transition-colors">
+                                <i class="fas fa-camera mr-2"></i>Thay đổi ảnh
+                            </label>
+                            <input type="file" asp-for="AvatarFile" id="AvatarFile" class="hidden" accept="image/*">
                         </div>
-                        
-                        <div class="col-md-8">
-                            <div class="mb-3">
-                                <label asp-for="UserName" class="form-label">Tên đăng nhập</label>
-                                <input asp-for="UserName" class="form-control" />
-                                <span asp-validation-for="UserName" class="text-danger"></span>
-                            </div>
 
-                            <div class="mb-3">
-                                <label asp-for="Bio" class="form-label">Mô tả</label>
-                                <textarea asp-for="Bio" class="form-control" rows="3" 
-                                          placeholder="Giới thiệu về bản thân..."></textarea>
-                                <span asp-validation-for="Bio" class="text-danger"></span>
+                        <!-- Fields -->
+                        <div class="md:col-span-2 space-y-5">
+                            <div>
+                                <label asp-for="UserName" class="block text-white/80 font-semibold mb-2">Tên đăng nhập</label>
+                                <input asp-for="UserName" class="w-full px-5 py-3 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400/50" />
+                                <span asp-validation-for="UserName" class="text-red-400 text-sm"></span>
                             </div>
-
-                            <div class="mb-3">
-                                <label asp-for="Status" class="form-label">Trạng thái</label>
-                                <select asp-for="Status" class="form-select">
+                            <div>
+                                <label asp-for="Bio" class="block text-white/80 font-semibold mb-2">Mô tả</label>
+                                <textarea asp-for="Bio" rows="3" placeholder="Giới thiệu về bản thân..." class="w-full px-5 py-3 rounded-2xl bg-white/10 border border-white/20 text-white placeholder-white/60 focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400/50"></textarea>
+                                <span asp-validation-for="Bio" class="text-red-400 text-sm"></span>
+                            </div>
+                            <div>
+                                <label asp-for="Status" class="block text-white/80 font-semibold mb-2">Trạng thái</label>
+                                <select asp-for="Status" class="w-full px-5 py-3 rounded-2xl bg-white/10 border border-white/20 text-white focus:outline-none focus:ring-2 focus:ring-purple-400 focus:border-purple-400/50">
                                     <option value="0">Offline</option>
                                     <option value="1">Online</option>
                                     <option value="2">Away</option>
                                     <option value="3">Busy</option>
                                 </select>
-                                <span asp-validation-for="Status" class="text-danger"></span>
+                                <span asp-validation-for="Status" class="text-red-400 text-sm"></span>
                             </div>
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-end gap-2">
-                        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-save me-1"></i>Lưu thay đổi
+                    <div class="flex justify-end space-x-3 pt-4">
+                        <a asp-action="Index" class="px-6 py-3 rounded-2xl bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-colors">Hủy</a>
+                        <button type="submit" class="px-6 py-3 rounded-2xl bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white font-semibold shadow-lg transition-all"> 
+                            <i class="fas fa-save mr-2"></i>Lưu thay đổi
                         </button>
                     </div>
                 </form>
@@ -70,16 +66,20 @@
 
 @section Scripts {
     @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
     <script>
-        function previewAvatar(input) {
-            if (input.files && input.files[0]) {
-                var reader = new FileReader();
-                reader.onload = function(e) {
-                    $('#avatarPreview').attr('src', e.target.result);
+        // Preview avatar without jQuery
+        const avatarInput = document.getElementById('AvatarFile');
+        const avatarPreview = document.getElementById('avatarPreview');
+        if (avatarInput) {
+            avatarInput.addEventListener('change', function() {
+                if (this.files && this.files[0]) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        avatarPreview.src = e.target.result;
+                    };
+                    reader.readAsDataURL(this.files[0]);
                 }
-                reader.readAsDataURL(input.files[0]);
-            }
+            });
         }
     </script>
 }
