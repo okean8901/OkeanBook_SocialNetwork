@@ -1,0 +1,234 @@
+/* Global Styles */
+html {
+  font-size: 14px;
+  height: 100%;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f8f9fa;
+  height: 100%;
+  margin: 0;
+}
+
+@media (min-width: 768px) {
+  html {
+    font-size: 16px;
+  }
+}
+
+/* Navigation */
+.navbar-brand img {
+  transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover img {
+  transform: scale(1.1);
+}
+
+/* Cards */
+.card {
+  border: none;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+  box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+/* Posts */
+.post-item {
+  transition: transform 0.2s ease;
+}
+
+.post-item:hover {
+  transform: translateY(-2px);
+}
+
+/* Chat Styles */
+.message {
+  max-width: 70%;
+  padding: 10px 15px;
+  border-radius: 18px;
+  position: relative;
+}
+
+.message-own {
+  background-color: #007bff;
+  color: white;
+  margin-left: auto;
+}
+
+.message-other {
+  background-color: #e9ecef;
+  color: #333;
+}
+
+.message-content p {
+  margin: 0;
+  word-wrap: break-word;
+}
+
+/* Online Status */
+.online-indicator {
+  width: 12px;
+  height: 12px;
+  background-color: #28a745;
+  border: 2px solid white;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
+/* Friend Status */
+.friend-status {
+  font-size: 0.8rem;
+}
+
+.friend-status.online {
+  color: #28a745;
+}
+
+.friend-status.offline {
+  color: #6c757d;
+}
+
+.friend-status.away {
+  color: #ffc107;
+}
+
+.friend-status.busy {
+  color: #dc3545;
+}
+
+/* Buttons */
+.btn {
+  border-radius: 20px;
+  transition: all 0.3s ease;
+}
+
+.btn:hover {
+  transform: translateY(-1px);
+}
+
+.btn-primary {
+  background: linear-gradient(45deg, #007bff, #0056b3);
+  border: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(45deg, #0056b3, #004085);
+}
+
+/* Forms */
+.form-control {
+  border-radius: 10px;
+  border: 1px solid #dee2e6;
+  transition: border-color 0.3s ease;
+}
+
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Alerts */
+.alert {
+  border: none;
+  border-radius: 10px;
+}
+
+/* Footer */
+.footer {
+  background-color: #343a40;
+  color: white;
+  padding: 20px 0;
+  margin-top: auto;
+}
+
+/* Loading Spinner */
+.spinner-border-sm {
+  width: 1rem;
+  height: 1rem;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c1c1c1;
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #a8a8a8;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .message {
+    max-width: 85%;
+  }
+  
+  .card-body {
+    padding: 1rem;
+  }
+}
+
+/* Animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+/* Notification Badge */
+.badge {
+  font-size: 0.7rem;
+  padding: 0.25em 0.5em;
+}
+
+/* Avatar */
+.rounded-circle {
+  object-fit: cover;
+}
+
+/* Typing Indicator */
+.typing-indicator {
+  display: none;
+  color: #6c757d;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+.typing-indicator.show {
+  display: block;
+}
+
+/* Group Avatar */
+.group-avatar {
+  background: linear-gradient(45deg, #007bff, #28a745);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+}

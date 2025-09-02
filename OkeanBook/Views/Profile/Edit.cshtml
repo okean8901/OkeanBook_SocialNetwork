@@ -1,0 +1,85 @@
+@model OkeanBook.Models.ViewModels.EditProfileViewModel
+
+@{
+    ViewData["Title"] = "Chỉnh sửa hồ sơ";
+}
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">Chỉnh sửa hồ sơ</h5>
+            </div>
+            <div class="card-body">
+                <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                    <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <div class="mb-3">
+                                <img id="avatarPreview" src="/img/default-avatar.png" 
+                                     class="rounded-circle mb-2" width="120" height="120" alt="Avatar">
+                                <div>
+                                    <label for="AvatarFile" class="btn btn-outline-primary btn-sm">
+                                        <i class="fas fa-camera me-1"></i>Thay đổi ảnh
+                                    </label>
+                                    <input type="file" asp-for="AvatarFile" id="AvatarFile" 
+                                           class="d-none" accept="image/*" onchange="previewAvatar(this)">
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-8">
+                            <div class="mb-3">
+                                <label asp-for="UserName" class="form-label">Tên đăng nhập</label>
+                                <input asp-for="UserName" class="form-control" />
+                                <span asp-validation-for="UserName" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Bio" class="form-label">Mô tả</label>
+                                <textarea asp-for="Bio" class="form-control" rows="3" 
+                                          placeholder="Giới thiệu về bản thân..."></textarea>
+                                <span asp-validation-for="Bio" class="text-danger"></span>
+                            </div>
+
+                            <div class="mb-3">
+                                <label asp-for="Status" class="form-label">Trạng thái</label>
+                                <select asp-for="Status" class="form-select">
+                                    <option value="0">Offline</option>
+                                    <option value="1">Online</option>
+                                    <option value="2">Away</option>
+                                    <option value="3">Busy</option>
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-end gap-2">
+                        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-1"></i>Lưu thay đổi
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+    
+    <script>
+        function previewAvatar(input) {
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.onload = function(e) {
+                    $('#avatarPreview').attr('src', e.target.result);
+                }
+                reader.readAsDataURL(input.files[0]);
+            }
+        }
+    </script>
+}

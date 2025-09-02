@@ -1,0 +1,256 @@
+﻿@model IEnumerable<OkeanBook.Models.ViewModels.PostViewModel>
+
+@{
+    ViewData["Title"] = "Trang chủ";
+}
+
+<div class="row">
+    <!-- Sidebar trái -->
+    <div class="col-md-3">
+        <div class="card mb-3">
+            <div class="card-body">
+                <h6 class="card-title">Tạo bài viết</h6>
+                <form asp-action="CreatePost" method="post" enctype="multipart/form-data">
+                    <div class="mb-3">
+                        <textarea name="Content" class="form-control" rows="3" placeholder="Bạn đang nghĩ gì?" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <input type="file" name="MediaFile" class="form-control" accept="image/*,video/*">
+                    </div>
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="fas fa-paper-plane me-1"></i>Đăng
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Tìm kiếm</h6>
+            </div>
+            <div class="card-body">
+                <form asp-action="Search" method="get">
+                    <div class="input-group">
+                        <input type="text" name="query" class="form-control" placeholder="Tìm kiếm bài viết...">
+                        <button type="submit" class="btn btn-outline-secondary">
+                            <i class="fas fa-search"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Nội dung chính -->
+    <div class="col-md-6">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4>Bảng tin</h4>
+            <div class="btn-group" role="group">
+                <button type="button" class="btn btn-outline-primary btn-sm active">
+                    <i class="fas fa-home me-1"></i>Tất cả
+                </button>
+                <button type="button" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-users me-1"></i>Bạn bè
+                </button>
+            </div>
+        </div>
+
+        @if (Model != null && Model.Any())
+        {
+            @foreach (var post in Model)
+            {
+                <div class="card mb-3 post-item" data-post-id="@post.Id">
+                    <div class="card-body">
+                        <!-- Header bài viết -->
+                        <div class="d-flex align-items-center mb-3">
+                            <img src="@(post.UserAvatar ?? "/img/default-avatar.png")" alt="Avatar" class="rounded-circle me-2" width="40" height="40">
+                            <div>
+                                <h6 class="mb-0">@post.UserName</h6>
+                                <small class="text-muted">@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                            </div>
+                        </div>
+
+                        <!-- Nội dung bài viết -->
+                        <p class="card-text">@post.Content</p>
+
+                        <!-- Media -->
+                        @if (!string.IsNullOrEmpty(post.MediaUrl))
+                        {
+                            <div class="mb-3">
+                                @if (post.Type == OkeanBook.Models.PostType.Image)
+                                {
+                                    <img src="@post.MediaUrl" class="img-fluid rounded" alt="Post image">
+                                }
+                                else if (post.Type == OkeanBook.Models.PostType.Video)
+                                {
+                                    <video src="@post.MediaUrl" class="img-fluid rounded" controls></video>
+                                }
+                            </div>
+                        }
+
+                        <!-- Actions -->
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-outline-primary btn-sm like-btn" data-post-id="@post.Id">
+                                    <i class="fas fa-heart @(post.IsLiked ? "text-danger" : "")"></i>
+                                    <span class="like-count">@post.LikeCount</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#comments-@post.Id">
+                                    <i class="fas fa-comment"></i>
+                                    <span>@post.CommentCount</span>
+                                </button>
+                                <button type="button" class="btn btn-outline-primary btn-sm">
+                                    <i class="fas fa-share"></i>
+                                    <span>@post.ShareCount</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- Form bình luận -->
+                        <div class="collapse mt-3" id="comments-@post.Id">
+                            <form asp-action="CreateComment" method="post" class="comment-form" data-post-id="@post.Id">
+                                <input type="hidden" name="PostId" value="@post.Id">
+                                <div class="input-group">
+                                    <input type="text" name="Content" class="form-control" placeholder="Viết bình luận..." required>
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </form>
+
+                            <!-- Danh sách bình luận -->
+                            <div class="mt-3" id="comments-list-@post.Id">
+                                @if (post.Comments != null && post.Comments.Any())
+                                {
+                                    @foreach (var comment in post.Comments.Take(3))
+                                    {
+                                        <div class="d-flex align-items-start mb-2">
+                                            <img src="@(comment.UserAvatar ?? "/img/default-avatar.png")" alt="Avatar" class="rounded-circle me-2" width="32" height="32">
+                                            <div class="flex-grow-1">
+                                                <div class="bg-light rounded p-2">
+                                                    <strong>@comment.UserName</strong>
+                                                    <p class="mb-1">@comment.Content</p>
+                                                    <small class="text-muted">@comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    }
+                                    
+                                    @if (post.Comments.Count() > 3)
+                                    {
+                                        <button type="button" class="btn btn-link btn-sm p-0" onclick="loadMoreComments(@post.Id)">
+                                            Xem thêm @(post.CommentCount - 3) bình luận
+                                        </button>
+                                    }
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div class="text-center py-5">
+                <i class="fas fa-newspaper text-muted" style="font-size: 3rem;"></i>
+                <h5 class="mt-3 text-muted">Chưa có bài viết nào</h5>
+                <p class="text-muted">Hãy tạo bài viết đầu tiên hoặc kết bạn để xem nội dung!</p>
+            </div>
+        }
+    </div>
+
+    <!-- Sidebar phải -->
+    <div class="col-md-3">
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0">Bạn bè online</h6>
+            </div>
+            <div class="card-body">
+                <div id="online-friends">
+                    <p class="text-muted text-center">Đang tải...</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Thông báo</h6>
+            </div>
+            <div class="card-body">
+                <div id="notifications">
+                    <p class="text-muted text-center">Đang tải...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Load bạn bè online
+            loadOnlineFriends();
+            
+            // Load thông báo
+            loadNotifications();
+            
+            // Xử lý like bài viết
+            $('.like-btn').click(function() {
+                var postId = $(this).data('post-id');
+                toggleLike(postId);
+            });
+            
+            // Xử lý bình luận
+            $('.comment-form').submit(function(e) {
+                e.preventDefault();
+                var postId = $(this).data('post-id');
+                var content = $(this).find('input[name="Content"]').val();
+                createComment(postId, content);
+            });
+        });
+
+        function toggleLike(postId) {
+            $.post('@Url.Action("ToggleLike", "Home")', { postId: postId })
+                .done(function(response) {
+                    if (response.success) {
+                        var btn = $('.like-btn[data-post-id="' + postId + '"]');
+                        var icon = btn.find('i');
+                        var count = btn.find('.like-count');
+                        
+                        if (response.isLiked) {
+                            icon.addClass('text-danger');
+                        } else {
+                            icon.removeClass('text-danger');
+                        }
+                        
+                        count.text(response.likeCount);
+                    }
+                });
+        }
+
+        function createComment(postId, content) {
+            $.post('@Url.Action("CreateComment", "Home")', {
+                PostId: postId,
+                Content: content
+            }).done(function(response) {
+                if (response.success) {
+                    location.reload();
+                }
+            });
+        }
+
+        function loadOnlineFriends() {
+            // TODO: Implement load online friends
+        }
+
+        function loadNotifications() {
+            // TODO: Implement load notifications
+        }
+
+        function loadMoreComments(postId) {
+            // TODO: Implement load more comments
+        }
+    </script>
+}

@@ -1,0 +1,341 @@
+@model OkeanBook.Models.ViewModels.ProfileViewModel
+
+@{
+    ViewData["Title"] = "Hồ sơ";
+}
+
+<div class="row">
+    <div class="col-md-4">
+        <!-- Thông tin cá nhân -->
+        <div class="card mb-3">
+            <div class="card-body text-center">
+                <img src="@(Model.Avatar ?? "/img/default-avatar.png")" 
+                     class="rounded-circle mb-3" width="120" height="120" alt="Avatar">
+                <h4>@Model.UserName</h4>
+                <p class="text-muted">@Model.Email</p>
+                
+                @if (!string.IsNullOrEmpty(Model.Bio))
+                {
+                    <p class="card-text">@Model.Bio</p>
+                }
+                
+                <div class="d-flex justify-content-center mb-3">
+                    <span class="badge bg-primary me-2">
+                        <i class="fas fa-calendar me-1"></i>
+                        Tham gia: @Model.CreatedAt.ToString("MM/yyyy")
+                    </span>
+                    <span class="badge bg-success">
+                        <i class="fas fa-circle me-1"></i>
+                        @Model.Status.ToString()
+                    </span>
+                </div>
+
+                @if (ViewBag.IsOwnProfile)
+                {
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" class="btn btn-primary">
+                            <i class="fas fa-edit me-1"></i>Chỉnh sửa hồ sơ
+                        </a>
+                        <a asp-action="ChangePassword" class="btn btn-outline-secondary">
+                            <i class="fas fa-key me-1"></i>Đổi mật khẩu
+                        </a>
+                    </div>
+                }
+                else
+                {
+                    <div class="d-grid gap-2">
+                        @if (ViewBag.FriendStatus == null)
+                        {
+                            <button class="btn btn-primary" onclick="sendFriendRequest('@Model.Id')">
+                                <i class="fas fa-user-plus me-1"></i>Kết bạn
+                            </button>
+                        }
+                        else if (ViewBag.FriendStatus.ToString() == "Pending")
+                        {
+                            <button class="btn btn-warning" disabled>
+                                <i class="fas fa-clock me-1"></i>Đã gửi lời mời
+                            </button>
+                        }
+                        else if (ViewBag.FriendStatus.ToString() == "Accepted")
+                        {
+                            <div class="btn-group" role="group">
+                                <a asp-controller="Chat" asp-action="Index" asp-route-chatId="@Model.Id" 
+                                   class="btn btn-success">
+                                    <i class="fas fa-comment me-1"></i>Nhắn tin
+                                </a>
+                                <button class="btn btn-outline-danger" onclick="removeFriend('@Model.Id')">
+                                    <i class="fas fa-user-times me-1"></i>Xóa bạn
+                                </button>
+                            </div>
+                        }
+                        else if (ViewBag.FriendStatus.ToString() == "Blocked")
+                        {
+                            <button class="btn btn-outline-danger" onclick="unblockUser('@Model.Id')">
+                                <i class="fas fa-unlock me-1"></i>Bỏ chặn
+                            </button>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+
+        <!-- Thống kê -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Thống kê</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <h5 class="text-primary" id="postCount">0</h5>
+                        <small class="text-muted">Bài viết</small>
+                    </div>
+                    <div class="col-4">
+                        <h5 class="text-success" id="friendCount">0</h5>
+                        <small class="text-muted">Bạn bè</small>
+                    </div>
+                    <div class="col-4">
+                        <h5 class="text-warning" id="commentCount">0</h5>
+                        <small class="text-muted">Bình luận</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-8">
+        <!-- Bài viết -->
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Bài viết</h5>
+                @if (ViewBag.IsOwnProfile)
+                {
+                    <a asp-controller="Home" asp-action="Index" class="btn btn-primary btn-sm">
+                        <i class="fas fa-plus me-1"></i>Tạo bài viết
+                    </a>
+                }
+            </div>
+            <div class="card-body">
+                <div id="postsList">
+                    @if (ViewBag.Posts != null && ((IEnumerable<OkeanBook.Models.ViewModels.PostViewModel>)ViewBag.Posts).Any())
+                    {
+                        @foreach (var post in (IEnumerable<OkeanBook.Models.ViewModels.PostViewModel>)ViewBag.Posts)
+                        {
+                            <div class="card mb-3 post-item" data-post-id="@post.Id">
+                                <div class="card-body">
+                                    <!-- Header bài viết -->
+                                    <div class="d-flex align-items-center mb-3">
+                                        <img src="@(post.UserAvatar ?? "/img/default-avatar.png")" 
+                                             alt="Avatar" class="rounded-circle me-2" width="40" height="40">
+                                        <div>
+                                            <h6 class="mb-0">@post.UserName</h6>
+                                            <small class="text-muted">@post.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                        </div>
+                                    </div>
+
+                                    <!-- Nội dung bài viết -->
+                                    <p class="card-text">@post.Content</p>
+
+                                    <!-- Media -->
+                                    @if (!string.IsNullOrEmpty(post.MediaUrl))
+                                    {
+                                        <div class="mb-3">
+                                            @if (post.Type == OkeanBook.Models.PostType.Image)
+                                            {
+                                                <img src="@post.MediaUrl" class="img-fluid rounded" alt="Post image">
+                                            }
+                                            else if (post.Type == OkeanBook.Models.PostType.Video)
+                                            {
+                                                <video src="@post.MediaUrl" class="img-fluid rounded" controls></video>
+                                            }
+                                        </div>
+                                    }
+
+                                    <!-- Actions -->
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div class="btn-group" role="group">
+                                            <button type="button" class="btn btn-outline-primary btn-sm like-btn" data-post-id="@post.Id">
+                                                <i class="fas fa-heart @(post.IsLiked ? "text-danger" : "")"></i>
+                                                <span class="like-count">@post.LikeCount</span>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary btn-sm" data-bs-toggle="collapse" data-bs-target="#comments-@post.Id">
+                                                <i class="fas fa-comment"></i>
+                                                <span>@post.CommentCount</span>
+                                            </button>
+                                            <button type="button" class="btn btn-outline-primary btn-sm">
+                                                <i class="fas fa-share"></i>
+                                                <span>@post.ShareCount</span>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <!-- Form bình luận -->
+                                    <div class="collapse mt-3" id="comments-@post.Id">
+                                        <form asp-controller="Home" asp-action="CreateComment" method="post" class="comment-form" data-post-id="@post.Id">
+                                            <input type="hidden" name="PostId" value="@post.Id">
+                                            <div class="input-group">
+                                                <input type="text" name="Content" class="form-control" placeholder="Viết bình luận..." required>
+                                                <button type="submit" class="btn btn-primary">
+                                                    <i class="fas fa-paper-plane"></i>
+                                                </button>
+                                            </div>
+                                        </form>
+
+                                        <!-- Danh sách bình luận -->
+                                        <div class="mt-3" id="comments-list-@post.Id">
+                                            @if (post.Comments != null && post.Comments.Any())
+                                            {
+                                                @foreach (var comment in post.Comments.Take(3))
+                                                {
+                                                    <div class="d-flex align-items-start mb-2">
+                                                        <img src="@(comment.UserAvatar ?? "/img/default-avatar.png")" 
+                                                             alt="Avatar" class="rounded-circle me-2" width="32" height="32">
+                                                        <div class="flex-grow-1">
+                                                            <div class="bg-light rounded p-2">
+                                                                <strong>@comment.UserName</strong>
+                                                                <p class="mb-1">@comment.Content</p>
+                                                                <small class="text-muted">@comment.CreatedAt.ToString("dd/MM/yyyy HH:mm")</small>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                }
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <div class="text-center py-5">
+                            <i class="fas fa-newspaper text-muted" style="font-size: 3rem;"></i>
+                            <h5 class="mt-3 text-muted">Chưa có bài viết nào</h5>
+                            @if (ViewBag.IsOwnProfile)
+                            {
+                                <p class="text-muted">Hãy tạo bài viết đầu tiên của bạn!</p>
+                                <a asp-controller="Home" asp-action="Index" class="btn btn-primary">
+                                    <i class="fas fa-plus me-1"></i>Tạo bài viết
+                                </a>
+                            }
+                            else
+                            {
+                                <p class="text-muted">Người dùng này chưa có bài viết nào</p>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Load thống kê
+            loadUserStats();
+            
+            // Xử lý like bài viết
+            $('.like-btn').click(function() {
+                var postId = $(this).data('post-id');
+                toggleLike(postId);
+            });
+            
+            // Xử lý bình luận
+            $('.comment-form').submit(function(e) {
+                e.preventDefault();
+                var postId = $(this).data('post-id');
+                var content = $(this).find('input[name="Content"]').val();
+                createComment(postId, content);
+            });
+        });
+
+        function loadUserStats() {
+            // TODO: Load user statistics
+            $('#postCount').text('@((ViewBag.Posts as IEnumerable<OkeanBook.Models.ViewModels.PostViewModel>)?.Count() ?? 0)');
+        }
+
+        function sendFriendRequest(userId) {
+            $.post('@Url.Action("SendFriendRequest", "Friend")', { friendId: userId })
+                .done(function(response) {
+                    if (response.success) {
+                        showAlert('success', response.message);
+                        location.reload();
+                    } else {
+                        showAlert('danger', response.message);
+                    }
+                });
+        }
+
+        function removeFriend(userId) {
+            if (confirm('Bạn có chắc chắn muốn xóa bạn bè này?')) {
+                $.post('@Url.Action("RemoveFriend", "Friend")', { friendId: userId })
+                    .done(function(response) {
+                        if (response.success) {
+                            showAlert('success', response.message);
+                            location.reload();
+                        } else {
+                            showAlert('danger', response.message);
+                        }
+                    });
+            }
+        }
+
+        function unblockUser(userId) {
+            $.post('@Url.Action("UnblockUser", "Friend")', { userId: userId })
+                .done(function(response) {
+                    if (response.success) {
+                        showAlert('success', response.message);
+                        location.reload();
+                    } else {
+                        showAlert('danger', response.message);
+                    }
+                });
+        }
+
+        function toggleLike(postId) {
+            $.post('@Url.Action("ToggleLike", "Home")', { postId: postId })
+                .done(function(response) {
+                    if (response.success) {
+                        var btn = $('.like-btn[data-post-id="' + postId + '"]');
+                        var icon = btn.find('i');
+                        var count = btn.find('.like-count');
+                        
+                        if (response.isLiked) {
+                            icon.addClass('text-danger');
+                        } else {
+                            icon.removeClass('text-danger');
+                        }
+                        
+                        count.text(response.likeCount);
+                    }
+                });
+        }
+
+        function createComment(postId, content) {
+            $.post('@Url.Action("CreateComment", "Home")', {
+                PostId: postId,
+                Content: content
+            }).done(function(response) {
+                if (response.success) {
+                    location.reload();
+                }
+            });
+        }
+
+        function showAlert(type, message) {
+            var alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('body').prepend(alertHtml);
+            
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 3000);
+        }
+    </script>
+}

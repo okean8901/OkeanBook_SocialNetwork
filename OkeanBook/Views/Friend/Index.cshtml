@@ -1,0 +1,311 @@
+@{
+    ViewData["Title"] = "Bạn bè";
+}
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">Quản lý bạn bè</h5>
+                <button class="btn btn-primary btn-sm" data-bs-toggle="modal" data-bs-target="#searchModal">
+                    <i class="fas fa-search me-1"></i>Tìm kiếm
+                </button>
+            </div>
+            <div class="card-body">
+                <!-- Tabs -->
+                <ul class="nav nav-tabs" id="friendTabs" role="tablist">
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link active" id="friends-tab" data-bs-toggle="tab" data-bs-target="#friends" type="button">
+                            Bạn bè <span class="badge bg-primary ms-1" id="friendsCount">0</span>
+                        </button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="requests-tab" data-bs-toggle="tab" data-bs-target="#requests" type="button">
+                            Lời mời <span class="badge bg-warning ms-1" id="requestsCount">0</span>
+                        </button>
+                    </li>
+                </ul>
+
+                <div class="tab-content mt-3" id="friendTabsContent">
+                    <!-- Danh sách bạn bè -->
+                    <div class="tab-pane fade show active" id="friends" role="tabpanel">
+                        <div id="friendsList">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Lời mời kết bạn -->
+                    <div class="tab-pane fade" id="requests" role="tabpanel">
+                        <div id="requestsList">
+                            <div class="text-center py-4">
+                                <div class="spinner-border text-primary" role="status">
+                                    <span class="visually-hidden">Đang tải...</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0">Thống kê</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6">
+                        <h4 class="text-primary" id="totalFriends">0</h4>
+                        <small class="text-muted">Bạn bè</small>
+                    </div>
+                    <div class="col-6">
+                        <h4 class="text-warning" id="pendingRequests">0</h4>
+                        <small class="text-muted">Lời mời</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal tìm kiếm -->
+<div class="modal fade" id="searchModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tìm kiếm người dùng</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="input-group mb-3">
+                    <input type="text" id="searchInput" class="form-control" placeholder="Nhập tên hoặc email...">
+                    <button class="btn btn-primary" type="button" onclick="searchUsers()">
+                        <i class="fas fa-search"></i>
+                    </button>
+                </div>
+                <div id="searchResults"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            loadFriends();
+            loadFriendRequests();
+        });
+
+        function loadFriends() {
+            $.get('@Url.Action("Index", "Friend")')
+                .done(function(data) {
+                    // Parse HTML response and extract friends
+                    var friendsHtml = $(data).find('#friendsList').html();
+                    $('#friendsList').html(friendsHtml);
+                    updateFriendsCount();
+                });
+        }
+
+        function loadFriendRequests() {
+            $.get('@Url.Action("Index", "Friend")')
+                .done(function(data) {
+                    // Parse HTML response and extract requests
+                    var requestsHtml = $(data).find('#requestsList').html();
+                    $('#requestsList').html(requestsHtml);
+                    updateRequestsCount();
+                });
+        }
+
+        function searchUsers() {
+            var query = $('#searchInput').val().trim();
+            if (!query) {
+                $('#searchResults').html('<p class="text-muted">Vui lòng nhập từ khóa tìm kiếm</p>');
+                return;
+            }
+
+            $.get('@Url.Action("Search", "Friend")', { query: query })
+                .done(function(response) {
+                    if (response.success) {
+                        displaySearchResults(response.users);
+                    } else {
+                        $('#searchResults').html('<p class="text-danger">' + response.message + '</p>');
+                    }
+                });
+        }
+
+        function displaySearchResults(users) {
+            if (users.length === 0) {
+                $('#searchResults').html('<p class="text-muted">Không tìm thấy người dùng nào</p>');
+                return;
+            }
+
+            var html = '';
+            users.forEach(function(user) {
+                var statusText = getStatusText(user.status);
+                var statusClass = getStatusClass(user.status);
+                var actionButton = getActionButton(user.friendStatus, user.id);
+
+                html += `
+                    <div class="d-flex align-items-center mb-3 p-2 border rounded">
+                        <img src="${user.avatar || '/img/default-avatar.png'}" 
+                             class="rounded-circle me-3" width="40" height="40" alt="Avatar">
+                        <div class="flex-grow-1">
+                            <h6 class="mb-1">${user.username}</h6>
+                            <small class="text-muted">${user.email}</small>
+                            <br>
+                            <small class="${statusClass}">${statusText}</small>
+                        </div>
+                        <div>
+                            ${actionButton}
+                        </div>
+                    </div>
+                `;
+            });
+
+            $('#searchResults').html(html);
+        }
+
+        function getStatusText(status) {
+            switch(status) {
+                case 0: return 'Offline';
+                case 1: return 'Online';
+                case 2: return 'Away';
+                case 3: return 'Busy';
+                default: return 'Offline';
+            }
+        }
+
+        function getStatusClass(status) {
+            switch(status) {
+                case 0: return 'text-muted';
+                case 1: return 'text-success';
+                case 2: return 'text-warning';
+                case 3: return 'text-danger';
+                default: return 'text-muted';
+            }
+        }
+
+        function getActionButton(friendStatus, userId) {
+            switch(friendStatus) {
+                case 'Accepted':
+                    return '<span class="badge bg-success">Bạn bè</span>';
+                case 'Pending':
+                    return '<span class="badge bg-warning">Đã gửi lời mời</span>';
+                case 'Blocked':
+                    return '<button class="btn btn-outline-danger btn-sm" onclick="unblockUser(\'' + userId + '\')">Bỏ chặn</button>';
+                default:
+                    return '<button class="btn btn-primary btn-sm" onclick="sendFriendRequest(\'' + userId + '\')">Kết bạn</button>';
+            }
+        }
+
+        function sendFriendRequest(userId) {
+            $.post('@Url.Action("SendFriendRequest", "Friend")', { friendId: userId })
+                .done(function(response) {
+                    if (response.success) {
+                        showAlert('success', response.message);
+                        searchUsers(); // Refresh search results
+                    } else {
+                        showAlert('danger', response.message);
+                    }
+                });
+        }
+
+        function acceptFriendRequest(friendId) {
+            $.post('@Url.Action("AcceptFriendRequest", "Friend")', { friendId: friendId })
+                .done(function(response) {
+                    if (response.success) {
+                        showAlert('success', response.message);
+                        loadFriendRequests();
+                        loadFriends();
+                    } else {
+                        showAlert('danger', response.message);
+                    }
+                });
+        }
+
+        function declineFriendRequest(friendId) {
+            $.post('@Url.Action("DeclineFriendRequest", "Friend")', { friendId: friendId })
+                .done(function(response) {
+                    if (response.success) {
+                        showAlert('success', response.message);
+                        loadFriendRequests();
+                    } else {
+                        showAlert('danger', response.message);
+                    }
+                });
+        }
+
+        function removeFriend(friendId) {
+            if (confirm('Bạn có chắc chắn muốn xóa bạn bè này?')) {
+                $.post('@Url.Action("RemoveFriend", "Friend")', { friendId: friendId })
+                    .done(function(response) {
+                        if (response.success) {
+                            showAlert('success', response.message);
+                            loadFriends();
+                        } else {
+                            showAlert('danger', response.message);
+                        }
+                    });
+            }
+        }
+
+        function blockUser(userId) {
+            if (confirm('Bạn có chắc chắn muốn chặn người dùng này?')) {
+                $.post('@Url.Action("BlockUser", "Friend")', { userId: userId })
+                    .done(function(response) {
+                        if (response.success) {
+                            showAlert('success', response.message);
+                            loadFriends();
+                        } else {
+                            showAlert('danger', response.message);
+                        }
+                    });
+            }
+        }
+
+        function unblockUser(userId) {
+            $.post('@Url.Action("UnblockUser", "Friend")', { userId: userId })
+                .done(function(response) {
+                    if (response.success) {
+                        showAlert('success', response.message);
+                        searchUsers();
+                    } else {
+                        showAlert('danger', response.message);
+                    }
+                });
+        }
+
+        function updateFriendsCount() {
+            var count = $('#friendsList .friend-item').length;
+            $('#friendsCount').text(count);
+            $('#totalFriends').text(count);
+        }
+
+        function updateRequestsCount() {
+            var count = $('#requestsList .request-item').length;
+            $('#requestsCount').text(count);
+            $('#pendingRequests').text(count);
+        }
+
+        function showAlert(type, message) {
+            var alertHtml = `
+                <div class="alert alert-${type} alert-dismissible fade show" role="alert">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+            $('body').prepend(alertHtml);
+            
+            // Auto dismiss after 3 seconds
+            setTimeout(function() {
+                $('.alert').alert('close');
+            }, 3000);
+        }
+    </script>
+}
